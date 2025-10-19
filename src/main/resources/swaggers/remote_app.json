@@ -1,0 +1,955 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8081",
+      "description": "Generated server url"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "paths": {
+    "/api/update_user": {
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "summary": "Сервис обновления данных пользователя",
+        "operationId": "updateUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerUpdateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/training_is_done": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис отметки выполненной тренировки",
+        "operationId": "trainingIsDone",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerTrainingIsDoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/set_trainer": {
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "summary": "Сервис добавления тренера",
+        "operationId": "setTrainer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerSetTrainerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get_users": {
+      "post": {
+        "tags": [
+          "user-info-controller"
+        ],
+        "summary": "Сервис получения информации о пользователях",
+        "operationId": "getUsers",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerGetUsersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerGetUsersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/get_training": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис получения информации о тренировках пользователя",
+        "operationId": "getTrainings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerGetTrainingsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerGetTrainingsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/generate_training": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис генерации тренировок",
+        "operationId": "generateTraining",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerGenerateTrainingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/create_user": {
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "summary": "Сервис создания пользователя",
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerCreateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/create_training": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис создания тренировки",
+        "operationId": "createTraining",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerCreateTrainingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/create_exercise": {
+      "post": {
+        "tags": [
+          "exercise-controller"
+        ],
+        "summary": "Сервис создания упражнений",
+        "operationId": "createExercise",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerCreateExerciseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RequestContainerUpdateUserRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "default": "NON",
+            "description": "Допустимые значения: MAN, WOMAN, WOMAN",
+            "enum": [
+              "MAN",
+              "WOMAN",
+              "NON"
+            ],
+            "example": "NON"
+          },
+          "goals": {
+            "type": "string",
+            "default": "Поддержание формы",
+            "description": "Допустимые значения: Поддержание формы, Похудение, Набор массы",
+            "enum": [
+              "Поддержание формы",
+              "Похудение",
+              "Набор массы"
+            ],
+            "example": "Поддержание формы"
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "is_trainer": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0,
+            "description": "0 - пользователь,\n1 - тренер",
+            "enum": [
+              "0",
+              "1"
+            ],
+            "example": 1
+          },
+          "training_level": {
+            "type": "string",
+            "default": "Новичок",
+            "description": "Допустимые значения: Новичок, Средний, Продвинутый",
+            "enum": [
+              "Новичок",
+              "Средний",
+              "Продвинутый"
+            ],
+            "example": "Новичок"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "ResponseContainerResult": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerTrainingIsDoneRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "training_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerSetTrainerRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trainer_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerGetUsersRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "ResponseContainerGetUsersResponse": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserData"
+            }
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "UserData": {
+        "type": "object",
+        "properties": {
+          "gender": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "age": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "role": {
+            "type": "string"
+          },
+          "goals": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date"
+          },
+          "training_level": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestContainerGetTrainingsRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "date_of_training": {
+            "type": "string",
+            "format": "date",
+            "default": "2025-09-21",
+            "description": "Дата тренировки"
+          },
+          "day_of_week": {
+            "type": "string",
+            "default": "Понедельник",
+            "description": "День тренировки"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "Exercises": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "approach": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "exercise_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "exercise_name": {
+            "type": "string"
+          }
+        }
+      },
+      "ResponseContainerGetTrainingsResponse": {
+        "type": "object",
+        "properties": {
+          "trainings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Trainings"
+            }
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "Trainings": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "exercises": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Exercises"
+            }
+          },
+          "training_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "day_of_week": {
+            "type": "string"
+          },
+          "is_done": {
+            "type": "boolean"
+          },
+          "muscle_group": {
+            "type": "string"
+          }
+        }
+      },
+      "RequestContainerGenerateTrainingRequest": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Количество тренировок"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "day_of_week_first_training": {
+            "type": "string",
+            "default": "Понедельник",
+            "description": "День тренировки",
+            "enum": [
+              "Понедельник",
+              "Вторник",
+              "Среда",
+              "Четверг",
+              "Пятница",
+              "Суббота",
+              "Воскресенье"
+            ],
+            "example": "Понедельник"
+          },
+          "date_first_training": {
+            "type": "string",
+            "format": "date",
+            "default": "2025-09-22",
+            "description": "Дата тренировки"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerCreateUserRequest": {
+        "type": "object",
+        "properties": {
+          "gender": {
+            "type": "string",
+            "default": "NON",
+            "description": "Допустимые значения: MAN, WOMAN, WOMAN",
+            "enum": [
+              "MAN",
+              "WOMAN",
+              "NON"
+            ],
+            "example": "NON"
+          },
+          "email": {
+            "type": "string"
+          },
+          "height": {
+            "type": "integer",
+            "format": "int64",
+            "minProperties": 40
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int64",
+            "minProperties": 40
+          },
+          "goals": {
+            "type": "string",
+            "default": "Поддержание формы",
+            "description": "Допустимые значения: Поддержание формы, Похудение, Набор массы",
+            "enum": [
+              "Поддержание формы",
+              "Похудение",
+              "Набор массы"
+            ],
+            "example": "Поддержание формы"
+          },
+          "user_name": {
+            "type": "string"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "is_trainer": {
+            "type": "integer",
+            "format": "int32",
+            "default": 0,
+            "description": "0 - пользователь,\n1 - тренер",
+            "enum": [
+              "0",
+              "1"
+            ],
+            "example": 1
+          },
+          "date_of_birth": {
+            "type": "string",
+            "format": "date"
+          },
+          "training_level": {
+            "type": "string",
+            "default": "Новичок",
+            "description": "Допустимые значения: Новичок, Средний, Продвинутый",
+            "enum": [
+              "Новичок",
+              "Средний",
+              "Продвинутый"
+            ],
+            "example": "Новичок"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerCreateTrainingRequest": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "default": "2025-09-22",
+            "description": "Дата тренировки"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "day_of_week": {
+            "type": "string",
+            "default": "Понедельник",
+            "description": "День тренировки",
+            "enum": [
+              "Понедельник",
+              "Вторник",
+              "Среда",
+              "Четверг",
+              "Пятница",
+              "Суббота",
+              "Воскресенье"
+            ],
+            "example": "Понедельник"
+          },
+          "muscle_group": {
+            "type": "string",
+            "default": "Грудные мышцы",
+            "description": "Группа мышц"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerCreateExerciseRequest": {
+        "type": "object",
+        "properties": {
+          "trainingId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "default": 10,
+            "description": "Количество повторений"
+          },
+          "approach": {
+            "type": "integer",
+            "format": "int32",
+            "default": 3,
+            "description": "Количество подходов"
+          },
+          "exercise_name": {
+            "type": "string",
+            "default": "Жим лежа",
+            "description": "Название упражнения"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic"
+      }
+    }
+  }
+}
