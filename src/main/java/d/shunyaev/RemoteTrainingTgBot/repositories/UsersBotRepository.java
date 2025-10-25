@@ -2,6 +2,7 @@ package d.shunyaev.RemoteTrainingTgBot.repositories;
 
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -19,11 +20,39 @@ public class UsersBotRepository extends BaseRepository{
                 insert into users_bot (chat_id, user_name, first_name, last_name)
                 values (?, ?, ?, ?)
                 """;
+
+        String sqlRegistr = """
+                insert into user_registration (chat_id, registration)
+                values (?, 0)
+                """;
+
         jdbcTemplate.update(sql,
                 user.getChatId(),
                 user.getUserName(),
                 user.getFirstName(),
                 user.getLastName());
+        jdbcTemplate.update(sqlRegistr,
+                user.getChatId());
+    }
+
+    public void setFlagRegistration(long chatId) {
+        String sql = """
+                update user_registration set registration = 1
+                where chat_id = ?
+                """;
+        jdbcTemplate.update(sql, chatId);
+    }
+
+    public Integer getRegistrationFlagByChatId(long chatId) {
+        String sql = """
+                select registration from user_registration
+                where chat_id = ?
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, Integer.class, chatId);
+        } catch (EmptyResultDataAccessException e) {
+            return 0;
+        }
     }
 
     public UsersBot getUserBotByChatId(long chatId) {
@@ -31,7 +60,11 @@ public class UsersBotRepository extends BaseRepository{
                 select * from users_bot
                 where chat_id = ?
                 """;
-        return jdbcTemplate.queryForObject(sql, mapToRowToUser(), chatId);
+        try {
+            return jdbcTemplate.queryForObject(sql, mapToRowToUser(), chatId);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     private RowMapper<UsersBot> mapToRowToUser() {

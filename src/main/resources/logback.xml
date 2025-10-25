@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <target>System.out</target>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%green(%d{yyyy-MM-dd HH:mm:ss}) [%highlight(%-5level)] - %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>debug</level>
+        </filter>
+    </appender>
+    <logger name="ch.qos.logback" additivity="false" level="DEBUG">
+        <appender-ref ref="stdout"/>
+    </logger>
+    <logger name="org.reflections.Reflections" additivity="false"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="org.springframework.web" level="INFO"/>
+    <logger name="org.springframework.jdbc.core" level="INFO"/>
+    <logger name="d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.CustomFeignLogger" level="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="stdout"/>
+    </root>
+</configuration>

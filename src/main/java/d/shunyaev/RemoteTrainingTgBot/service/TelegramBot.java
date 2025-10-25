@@ -1,12 +1,8 @@
 package d.shunyaev.RemoteTrainingTgBot.service;
 
 import d.shunyaev.RemoteTrainingTgBot.config.BotConfig;
-import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
-import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
-import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
-import d.shunyaev.model.RequestContainerGetUsersRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import d.shunyaev.RemoteTrainingTgBot.controller.TelegramController;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -18,18 +14,18 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
+@Slf4j
 public class TelegramBot extends TelegramLongPollingBot {
 
-    private static final Logger log = LoggerFactory.getLogger(TelegramBot.class);
     private final BotConfig config;
-    private final UsersBotRepository usersBotRepository;
+    private final TelegramController telegramController;
 
-    public TelegramBot(BotConfig config, UsersBotRepository usersBotRepository) {
+
+    public TelegramBot(BotConfig config, TelegramController telegramController) {
         this.config = config;
-        this.usersBotRepository = usersBotRepository;
+        this.telegramController = telegramController;
         List<BotCommand> listOfCommands = new ArrayList<>();
 
         listOfCommands.add(new BotCommand("/start", "Начать работу"));
@@ -43,24 +39,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            var msg = update.getMessage();
-            long chatId = update.getMessage().getChatId();
-
-            UsersBot usersBot = new UsersBot()
-                    .setChatId(chatId)
-                    .setUserName(msg.getFrom().getUserName())
-                    .setFirstName(msg.getFrom().getFirstName())
-                    .setLastName(msg.getFrom().getLastName());
-
-//            usersBotRepository.setNewUser(usersBot);
-            RequestContainerGetUsersRequest request = new RequestContainerGetUsersRequest()
-                    .userId(List.of(1L));
-            var response = RemoteAppController.getUserInfoControllerApi().getUsers(request);
-            var usr = usersBotRepository.getUserBotByChatId(chatId);
-            sendMessage(chatId, usr.toString());
-        }
+        sendMessage(telegramController.mainController(update));
     }
 
     @Override
@@ -73,14 +52,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         return config.getToken();
     }
 
-    void sendMessage(long chatId, String textToSend) {
-        SendMessage message = new SendMessage();
-        message.setChatId(String.valueOf(chatId));
-        message.setText(textToSend);
+    public void sendMessage(SendMessage message) {
         try {
             execute(message);
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage());
         }
     }
+
 }
