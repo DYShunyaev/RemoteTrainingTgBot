@@ -55,23 +55,23 @@ public class TelegramController {
                 ? callbackQuery.getData().replaceAll("/.*", "")
                 : "";
         if (textMessage.equals("createUser")) {
-            responseMessage = telegramService.createUser(callbackQuery);
+            responseMessage = telegramService.createUser(callbackQuery, chatId);
         } else if (Objects.nonNull(beforeMessage)) {
             if (Objects.isNull(callbackQuery)) {
                 callbackQuery = createNewCallbackQuery(message);
             }
             if (beforeMessage.getText().contains("email")) {
                 callbackQuery.setData(CREATE_USER.getUrl() + EMAIL.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("вес")) {
+            } else if (beforeMessage.getText().contains("вес") || beforeMessage.getText().contains("Вес")) {
                 callbackQuery.setData(CREATE_USER.getUrl() + WEIGHT.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("рост")) {
+            } else if (beforeMessage.getText().contains("рост") || beforeMessage.getText().contains("Рост")) {
                 callbackQuery.setData(CREATE_USER.getUrl() + HEIGHT.getUrl() + message.getText());
             } else if (beforeMessage.getText().contains("дату рождения")) {
                 callbackQuery.setData(CREATE_USER.getUrl() + DATE_OF_BIRTH.getUrl() + message.getText());
             } else if (beforeMessage.getText().contains("Фамилию")) {
                 callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + message.getText());
             }
-            responseMessage = telegramService.createUser(callbackQuery);
+            responseMessage = telegramService.createUser(callbackQuery, chatId);
         }
     }
 
@@ -81,15 +81,3 @@ public class TelegramController {
         return callbackQuery;
     }
 }
-
-
-// if (update.hasMessage() && update.getMessage().hasText()) {
-//         if (requestMessage.getText().equals("/start")) {
-//
-//         }
-//         } else if (update.hasCallbackQuery()) {
-//            String textMessage = callbackQuery.getData().replaceAll("/.*", "");
-//            switch (textMessage) {
-//                case "createUser" -> responseMessage = telegramService.createUser(callbackQuery);
-//                default -> responseMessage = new SendMessage();
-//         }

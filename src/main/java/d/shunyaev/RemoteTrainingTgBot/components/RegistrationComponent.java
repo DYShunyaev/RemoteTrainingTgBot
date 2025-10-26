@@ -3,6 +3,7 @@ package d.shunyaev.RemoteTrainingTgBot.components;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -52,28 +53,32 @@ public class RegistrationComponent {
     public SendMessage registration(Message message) {
         SendMessage responseMessage = new SendMessage();
         if (isRegistration(message)) {
-            String helloText = "helloText";
-            responseMessage.setChatId(message.getChatId());
-            responseMessage.setText(helloText);
-
-            InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-            InlineKeyboardButton button = new InlineKeyboardButton();
-            button.setText("REGISTRATION");
-            button.setCallbackData(CREATE_USER.getUrl());
-
-            List<InlineKeyboardButton> buttonList = new ArrayList<>();
-            buttonList.add(button);
-
-            keyboard.add(buttonList);
-
-            markupInLine.setKeyboard(keyboard);
-            responseMessage.setReplyMarkup(markupInLine);
-
+            responseMessage = addRegistrationButton(responseMessage, message.getChatId());
         } else {
             responseMessage.setChatId(message.getChatId());
             responseMessage.setText("Пользователь уже зарегестрирован.");
         }
+        return responseMessage;
+    }
+
+    public SendMessage addRegistrationButton(@NonNull SendMessage responseMessage, long chatId) {
+        String helloText = "helloText";
+        responseMessage.setChatId(chatId);
+        responseMessage.setText(helloText);
+
+        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        InlineKeyboardButton button = new InlineKeyboardButton();
+        button.setText("РЕГИСТРАЦИЯ");
+        button.setCallbackData(CREATE_USER.getUrl());
+
+        List<InlineKeyboardButton> buttonList = new ArrayList<>();
+        buttonList.add(button);
+
+        keyboard.add(buttonList);
+
+        markupInLine.setKeyboard(keyboard);
+        responseMessage.setReplyMarkup(markupInLine);
         return responseMessage;
     }
 

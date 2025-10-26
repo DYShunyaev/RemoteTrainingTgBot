@@ -1,11 +1,14 @@
 package d.shunyaev.RemoteTrainingTgBot.config;
 
 import d.shunyaev.ApiClient;
+import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.CustomErrorDecoder;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.CustomFeignLogger;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.TraceIdInterceptor;
+import feign.Client;
 import feign.Logger;
 import feign.Retryer;
 import feign.codec.ErrorDecoder;
+import kotlin.Unit;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;
@@ -31,7 +34,7 @@ public class RemoteAppApiClient extends ApiClient {
         super.getFeignBuilder()
                 .logger(new CustomFeignLogger())
                 .logLevel(Logger.Level.FULL)
-                .errorDecoder(new ErrorDecoder.Default())
+                .errorDecoder(new CustomErrorDecoder())
                 .requestInterceptor(new TraceIdInterceptor())
                 .requestInterceptor(requestTemplate ->
                         requestTemplate.header("Content-Type", new String[]{"application/json"}))
