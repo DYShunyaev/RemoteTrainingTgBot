@@ -1,4 +1,4 @@
-package d.shunyaev.RemoteTrainingTgBot.create_user;
+package d.shunyaev.RemoteTrainingTgBot;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.CreateUserComponent;

@@ -193,10 +193,7 @@ public class CreateUserComponent {
 
             button.setCallbackData(CREATE_USER.getUrl() + enumValue);
 
-            List<InlineKeyboardButton> buttonList = new ArrayList<>();
-            buttonList.add(button);
-
-            keyboard.add(buttonList);
+            keyboard.add(List.of(button));
         }
 
         markupInLine.setKeyboard(keyboard);

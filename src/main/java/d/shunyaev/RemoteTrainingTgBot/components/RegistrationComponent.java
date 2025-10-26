@@ -29,12 +29,12 @@ public class RegistrationComponent {
     }
 
     @Transactional
-    boolean isRegistration(Message message) {
-        if (validateComponent.isExistUser(message.getChatId())) {
+    boolean isRegistration(Message message, long chatId) {
+        if (validateComponent.isExistUser(chatId)) {
             User user = message.getFrom();
 
             UsersBot usersBot = new UsersBot()
-                    .setChatId(message.getChatId())
+                    .setChatId(chatId)
                     .setUserName(user.getUserName())
                     .setFirstName(user.getFirstName())
                     .setLastName(user.getLastName() != null
@@ -43,19 +43,23 @@ public class RegistrationComponent {
 
             usersBotRepository.setNewUser(usersBot);
 
-            CashComponent.CREATE_USER_REQUESTS.put(message.getChatId(), new RequestContainerCreateUserRequest());
+            CashComponent.CREATE_USER_REQUESTS.put(chatId, new RequestContainerCreateUserRequest());
             return true;
         } else {
             return false;
         }
     }
 
-    public SendMessage registration(Message message) {
+    public SendMessage registration(@NonNull Message message) {
+        return registration(message, message.getChatId());
+    }
+
+    public SendMessage registration(@NonNull Message message, long chatId) {
         SendMessage responseMessage = new SendMessage();
-        if (isRegistration(message)) {
-            responseMessage = addRegistrationButton(responseMessage, message.getChatId());
+        if (isRegistration(message, chatId)) {
+            responseMessage = addRegistrationButton(responseMessage, chatId);
         } else {
-            responseMessage.setChatId(message.getChatId());
+            responseMessage.setChatId(chatId);
             responseMessage.setText("Пользователь уже зарегестрирован.");
         }
         return responseMessage;
@@ -72,10 +76,7 @@ public class RegistrationComponent {
         button.setText("РЕГИСТРАЦИЯ");
         button.setCallbackData(CREATE_USER.getUrl());
 
-        List<InlineKeyboardButton> buttonList = new ArrayList<>();
-        buttonList.add(button);
-
-        keyboard.add(buttonList);
+        keyboard.add(List.of(button));
 
         markupInLine.setKeyboard(keyboard);
         responseMessage.setReplyMarkup(markupInLine);
