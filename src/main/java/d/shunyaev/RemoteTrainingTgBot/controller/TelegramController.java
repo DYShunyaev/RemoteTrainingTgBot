@@ -19,7 +19,7 @@ public class TelegramController {
 
     private final CreateUserComponent telegramService;
     private final RegistrationComponent registrationComponent;
-    private final Map<Long, SendMessage> BEFORE_MESSAGES = new HashMap<>();
+    private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private SendMessage responseMessage = new SendMessage();
 
     public TelegramController(CreateUserComponent telegramService, RegistrationComponent registrationComponent) {
@@ -31,48 +31,52 @@ public class TelegramController {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         Message requestMessage = update.getMessage();
 
-        long chatId = requestMessage != null
-                ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+        long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+
         registrationController(requestMessage);
         createUserController(callbackQuery, requestMessage, chatId);
-        BEFORE_MESSAGES.put(chatId, responseMessage);
+        beforeMessages.put(chatId, responseMessage);
         return responseMessage;
     }
 
     private void registrationController(Message requestMessage) {
-        if (Objects.nonNull(requestMessage)) {
-            if (requestMessage.hasText()) {
-                if (requestMessage.getText().equals("/start")) {
-                    responseMessage = registrationComponent.registration(requestMessage);
-                }
-            }
+        if (Objects.nonNull(requestMessage) && requestMessage.hasText() && "/start".equals(requestMessage.getText())) {
+            responseMessage = registrationComponent.registration(requestMessage);
         }
     }
 
     private void createUserController(CallbackQuery callbackQuery, Message message, long chatId) {
-        SendMessage beforeMessage = BEFORE_MESSAGES.get(chatId);
-        String textMessage = Objects.nonNull(callbackQuery)
-                ? callbackQuery.getData().replaceAll("/.*", "")
-                : "";
-        if (textMessage.equals("createUser")) {
+        SendMessage beforeMessage = beforeMessages.get(chatId);
+        String data = (callbackQuery != null) ? callbackQuery.getData() : "";
+        String textCommand = data.replaceAll("/.*", "");
+
+        if ("createUser".equals(textCommand)) {
             responseMessage = telegramService.createUser(callbackQuery, chatId);
-        } else if (Objects.nonNull(beforeMessage)) {
-            if (Objects.isNull(callbackQuery)) {
-                callbackQuery = createNewCallbackQuery(message);
-            }
-            if (beforeMessage.getText().contains("email")) {
-                callbackQuery.setData(CREATE_USER.getUrl() + EMAIL.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("вес") || beforeMessage.getText().contains("Вес")) {
-                callbackQuery.setData(CREATE_USER.getUrl() + WEIGHT.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("рост") || beforeMessage.getText().contains("Рост")) {
-                callbackQuery.setData(CREATE_USER.getUrl() + HEIGHT.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("дату рождения")) {
-                callbackQuery.setData(CREATE_USER.getUrl() + DATE_OF_BIRTH.getUrl() + message.getText());
-            } else if (beforeMessage.getText().contains("Фамилию")) {
-                callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + message.getText());
-            }
-            responseMessage = telegramService.createUser(callbackQuery, chatId);
+            return;
         }
+
+        if (beforeMessage == null) return;
+
+        if (callbackQuery == null) {
+            callbackQuery = createNewCallbackQuery(message);
+        }
+
+        String userInput = message != null ? message.getText() : null;
+        String beforeText = beforeMessage.getText();
+
+        if (beforeText.contains("email")) {
+            callbackQuery.setData(CREATE_USER.getUrl() + EMAIL.getUrl() + userInput);
+        } else if (beforeText.contains("вес") || beforeText.contains("Вес")) {
+            callbackQuery.setData(CREATE_USER.getUrl() + WEIGHT.getUrl() + userInput);
+        } else if (beforeText.contains("рост") || beforeText.contains("Рост")) {
+            callbackQuery.setData(CREATE_USER.getUrl() + HEIGHT.getUrl() + userInput);
+        } else if (beforeText.contains("дату рождения")) {
+            callbackQuery.setData(CREATE_USER.getUrl() + DATE_OF_BIRTH.getUrl() + userInput);
+        } else if (beforeText.contains("Фамилию")) {
+            callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + userInput);
+        }
+
+        responseMessage = telegramService.createUser(callbackQuery, chatId);
     }
 
     private CallbackQuery createNewCallbackQuery(Message message) {
