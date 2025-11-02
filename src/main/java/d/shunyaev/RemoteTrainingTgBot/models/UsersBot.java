@@ -13,6 +13,7 @@ public class UsersBot {
 
     private long id;
     private long chatId;
+    private long userId;
     private String userName;
     private String firstName;
     private String lastName;

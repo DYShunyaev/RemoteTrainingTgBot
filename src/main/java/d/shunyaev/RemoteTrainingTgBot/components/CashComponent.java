@@ -1,5 +1,6 @@
 package d.shunyaev.RemoteTrainingTgBot.components;
 
+import d.shunyaev.model.RequestContainerCreateExerciseRequest;
 import d.shunyaev.model.RequestContainerCreateTrainingRequest;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import lombok.experimental.UtilityClass;
@@ -12,4 +13,5 @@ public class CashComponent {
 
     public static final Map<Long, RequestContainerCreateUserRequest> CREATE_USER_REQUESTS = new HashMap<>();
     public static final Map<Long, RequestContainerCreateTrainingRequest> CREATE_TRAINING_REQUESTS = new HashMap<>();
+    public static final Map<Long, RequestContainerCreateExerciseRequest> CREATE_EXERCISE_REQUEST = new HashMap<>();
 }

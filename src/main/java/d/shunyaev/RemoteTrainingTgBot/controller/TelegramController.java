@@ -1,8 +1,9 @@
 package d.shunyaev.RemoteTrainingTgBot.controller;
 
-import d.shunyaev.RemoteTrainingTgBot.components.CreateTrainingComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.RegistrationComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.CreateUserComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.CreateExerciseComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.CreateTrainingComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.RegistrationComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.CreateUserComponent;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -21,16 +22,20 @@ public class TelegramController {
     private final RegistrationComponent registrationComponent;
     private final CreateUserComponent createUserComponent;
     private final CreateTrainingComponent createTrainingComponent;
+    private final CreateExerciseComponent createExerciseComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private SendMessage responseMessage = new SendMessage();
 
     public TelegramController(
             CreateUserComponent telegramService,
             RegistrationComponent registrationComponent,
-            CreateTrainingComponent createTrainingComponent) {
+            CreateTrainingComponent createTrainingComponent,
+            CreateExerciseComponent createExerciseComponent
+    ) {
         this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
         this.createTrainingComponent = createTrainingComponent;
+        this.createExerciseComponent = createExerciseComponent;
     }
 
     public SendMessage mainController(Update update) {
@@ -87,7 +92,6 @@ public class TelegramController {
     }
 
     private void createTrainingController(CallbackQuery callbackQuery, Message message, long chatId) {
-        SendMessage beforeMessage = beforeMessages.get(chatId);
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
         String textMessage = Objects.nonNull(message)
@@ -96,7 +100,18 @@ public class TelegramController {
 
         if ("createNewTraining".equals(textCommand) || textMessage.equals("/create_new_training")) {
             responseMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
-            return;
+        }
+    }
+
+    private void createExerciseController(CallbackQuery callbackQuery, Message message, long chatId) {
+        String data = (callbackQuery != null) ? callbackQuery.getData() : "";
+        String textCommand = data.replaceAll("/.*", "");
+        String textMessage = Objects.nonNull(message)
+                ? message.getText()
+                : "";
+
+        if ("createNewExercise".equals(textCommand)) {
+            responseMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
         }
     }
 

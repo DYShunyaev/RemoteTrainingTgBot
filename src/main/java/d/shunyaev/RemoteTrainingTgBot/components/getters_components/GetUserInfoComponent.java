@@ -1,4 +1,4 @@
-package d.shunyaev.RemoteTrainingTgBot.components;
+package d.shunyaev.RemoteTrainingTgBot.components.getters_components;
 
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.model.RequestContainerGetUserByUserNameRequest;

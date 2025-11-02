@@ -692,6 +692,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "weight": {
+            "type": "integer",
+            "format": "int32"
+          },
           "exercise_id": {
             "type": "integer",
             "format": "int64"
@@ -975,6 +979,11 @@
             "format": "int32",
             "default": 3,
             "description": "Количество подходов"
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Вес"
           },
           "exercise_name": {
             "type": "string",

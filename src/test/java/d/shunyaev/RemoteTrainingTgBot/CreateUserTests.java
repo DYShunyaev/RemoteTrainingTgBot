@@ -1,7 +1,7 @@
 package d.shunyaev.RemoteTrainingTgBot;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.CreateUserComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.CreateUserComponent;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
 import d.shunyaev.RemoteTrainingTgBot.utils.RandomUtils;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
@@ -47,7 +47,7 @@ public class CreateUserTests {
     public void setUp() {
         chatId = RandomUtils.generateRandomChatId();
         var request = new RequestContainerCreateUserRequest();
-        request.setGender(GenderEnum.MAN);
+        request.setGender(GenderEnum.u);
         CashComponent.CREATE_USER_REQUESTS.put(chatId, request);
 
         var user = new User();

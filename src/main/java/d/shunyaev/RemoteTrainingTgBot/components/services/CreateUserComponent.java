@@ -1,5 +1,7 @@
-package d.shunyaev.RemoteTrainingTgBot.components;
+package d.shunyaev.RemoteTrainingTgBot.components.services;
 
+import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoComponent;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
@@ -35,14 +37,20 @@ public class CreateUserComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final RegistrationComponent registrationComponent;
+    private final GetUserInfoComponent getUserInfoComponent;
     private final Class<GenderEnum> GENDER = GenderEnum.class;
     private final Class<GoalsEnum> GOALS = GoalsEnum.class;
     private final Class<TrainingLevelEnum> TRAINING_LEVEL = TrainingLevelEnum.class;
     private final Class<IsTrainerEnum> IS_TRAINER = IsTrainerEnum.class;
 
-    public CreateUserComponent(UsersBotRepository usersBotRepository, RegistrationComponent registrationComponent) {
+    public CreateUserComponent(
+            UsersBotRepository usersBotRepository,
+            RegistrationComponent registrationComponent,
+            GetUserInfoComponent getUserInfoComponent
+    ) {
         this.usersBotRepository = usersBotRepository;
         this.registrationComponent = registrationComponent;
+        this.getUserInfoComponent = getUserInfoComponent;
     }
 
     public SendMessage createUser(CallbackQuery callbackQuery, long chatId) {
@@ -138,6 +146,11 @@ public class CreateUserComponent {
             assert responseContainerResult.getCode() != null;
             if (responseContainerResult.getCode().equals(200)) {
                 usersBotRepository.setFlagRegistration(chatId);
+
+                String userName = createUserRequest.getUserName();
+                long userId = getUserInfoComponent.getUserId(userName);
+                usersBotRepository.setUserId(userId, userName);
+
                 CashComponent.CREATE_USER_REQUESTS.remove(chatId);
                 responseMessage.setText("Регистрация завершена");
 

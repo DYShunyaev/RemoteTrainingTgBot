@@ -35,6 +35,14 @@ public class UsersBotRepository extends BaseRepository{
                 user.getChatId());
     }
 
+    public void setUserId(long userId, String userName) {
+        String sql = """
+                update users_bot set user_id = ?
+                where user_name = ?
+                """;
+        jdbcTemplate.update(sql, userId, userName);
+    }
+
     public void setFlagRegistration(long chatId) {
         String sql = """
                 update user_registration set registration = 1
@@ -71,6 +79,7 @@ public class UsersBotRepository extends BaseRepository{
         return ((rs, rowNum) -> new UsersBot()
                 .setId(rs.getLong("id"))
                 .setChatId(rs.getLong("chat_id"))
+                .setUserId(rs.getLong("user_id"))
                 .setUserName(rs.getString("user_name"))
                 .setFirstName(rs.getString("first_name"))
                 .setLastName(rs.getString("last_name")));

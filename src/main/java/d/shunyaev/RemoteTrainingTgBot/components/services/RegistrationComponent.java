@@ -1,5 +1,7 @@
-package d.shunyaev.RemoteTrainingTgBot.components;
+package d.shunyaev.RemoteTrainingTgBot.components.services;
 
+import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
@@ -43,7 +45,6 @@ public class RegistrationComponent {
 
             usersBotRepository.setNewUser(usersBot);
 
-            CashComponent.CREATE_USER_REQUESTS.put(chatId, new RequestContainerCreateUserRequest());
             return true;
         } else {
             return false;
@@ -80,6 +81,7 @@ public class RegistrationComponent {
 
         markupInLine.setKeyboard(keyboard);
         responseMessage.setReplyMarkup(markupInLine);
+        CashComponent.CREATE_USER_REQUESTS.put(chatId, new RequestContainerCreateUserRequest());
         return responseMessage;
     }
 

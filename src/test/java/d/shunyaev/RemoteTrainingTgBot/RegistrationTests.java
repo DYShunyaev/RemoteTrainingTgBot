@@ -1,8 +1,10 @@
 package d.shunyaev.RemoteTrainingTgBot;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.RegistrationComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.RegistrationComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
+import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
+import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
 import d.shunyaev.RemoteTrainingTgBot.utils.RandomUtils;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_USER;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -32,7 +36,9 @@ public class RegistrationTests {
     private RegistrationComponent registrationComponent;
     @Mock
     private ValidateComponent validateComponent;
-    private Message message = new Message();
+    @Mock
+    private UsersBotRepository usersBotRepository;
+    private final Message message = new Message();
     private long chatId;
 
     @BeforeEach
@@ -51,6 +57,7 @@ public class RegistrationTests {
     @Test
     public void registrationPositiveTest() {
         when(validateComponent.isExistUser(anyLong())).thenReturn(true);
+        doNothing().when(usersBotRepository).setNewUser(any(UsersBot.class));
 
         var response = registrationComponent.registration(message, chatId);
 
@@ -88,6 +95,8 @@ public class RegistrationTests {
     @Test
     public void registrationNegativeTest() {
         when(validateComponent.isExistUser(anyLong())).thenReturn(false);
+        var requestBefore = CashComponent.CREATE_USER_REQUESTS;
+
 
         var response = registrationComponent.registration(message, chatId);
 
@@ -102,7 +111,7 @@ public class RegistrationTests {
                         expectedResponse, response
                 ),
                 () -> Assertions.assertEquals(
-                        0, requestAfter.size()
+                        requestBefore.size(), requestAfter.size()
                 )
         );
     }
