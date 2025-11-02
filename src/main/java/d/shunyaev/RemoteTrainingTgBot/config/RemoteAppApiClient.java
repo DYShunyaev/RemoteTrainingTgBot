@@ -4,11 +4,8 @@ import d.shunyaev.ApiClient;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.CustomErrorDecoder;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.CustomFeignLogger;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.TraceIdInterceptor;
-import feign.Client;
 import feign.Logger;
 import feign.Retryer;
-import feign.codec.ErrorDecoder;
-import kotlin.Unit;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.nio.charset.StandardCharsets;

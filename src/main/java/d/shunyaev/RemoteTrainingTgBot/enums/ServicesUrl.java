@@ -1,12 +1,16 @@
 package d.shunyaev.RemoteTrainingTgBot.enums;
 
 public enum ServicesUrl {
+
+    START("start"),
     CREATE_USER("createUser/"),
     EMAIL("email/"),
     WEIGHT("weight/"),
     HEIGHT("height/"),
     DATE_OF_BIRTH("dateOfBirth/"),
-    LAST_NAME("lastName/")
+    LAST_NAME("lastName/"),
+    CREATE_NEW_TRAINING("createNewTraining/"),
+    CREATE_NEW_EXERCISE("createNewExercise/")
     ;
     private final String url;
     ServicesUrl(String url) {

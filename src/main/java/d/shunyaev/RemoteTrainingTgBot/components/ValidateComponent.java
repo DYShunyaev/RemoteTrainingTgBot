@@ -17,4 +17,8 @@ public class ValidateComponent {
     public boolean isExistUser(long chatId) {
         return Objects.isNull(usersBotRepository.getUserBotByChatId(chatId));
     }
+
+    public boolean isRegistration(long chatId) {
+        return usersBotRepository.getRegistrationFlagByChatId(chatId) == 1;
+    }
 }

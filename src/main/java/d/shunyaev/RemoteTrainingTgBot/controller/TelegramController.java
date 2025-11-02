@@ -1,5 +1,6 @@
 package d.shunyaev.RemoteTrainingTgBot.controller;
 
+import d.shunyaev.RemoteTrainingTgBot.components.CreateTrainingComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.RegistrationComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.CreateUserComponent;
 import org.springframework.stereotype.Component;
@@ -17,14 +18,19 @@ import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 @Component
 public class TelegramController {
 
-    private final CreateUserComponent telegramService;
     private final RegistrationComponent registrationComponent;
+    private final CreateUserComponent createUserComponent;
+    private final CreateTrainingComponent createTrainingComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private SendMessage responseMessage = new SendMessage();
 
-    public TelegramController(CreateUserComponent telegramService, RegistrationComponent registrationComponent) {
-        this.telegramService = telegramService;
+    public TelegramController(
+            CreateUserComponent telegramService,
+            RegistrationComponent registrationComponent,
+            CreateTrainingComponent createTrainingComponent) {
+        this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
+        this.createTrainingComponent = createTrainingComponent;
     }
 
     public SendMessage mainController(Update update) {
@@ -35,6 +41,7 @@ public class TelegramController {
 
         registrationController(requestMessage);
         createUserController(callbackQuery, requestMessage, chatId);
+        createTrainingController(callbackQuery, requestMessage, chatId);
         beforeMessages.put(chatId, responseMessage);
         return responseMessage;
     }
@@ -51,7 +58,7 @@ public class TelegramController {
         String textCommand = data.replaceAll("/.*", "");
 
         if ("createUser".equals(textCommand)) {
-            responseMessage = telegramService.createUser(callbackQuery, chatId);
+            responseMessage = createUserComponent.createUser(callbackQuery, chatId);
             return;
         }
 
@@ -76,7 +83,21 @@ public class TelegramController {
             callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + userInput);
         }
 
-        responseMessage = telegramService.createUser(callbackQuery, chatId);
+        responseMessage = createUserComponent.createUser(callbackQuery, chatId);
+    }
+
+    private void createTrainingController(CallbackQuery callbackQuery, Message message, long chatId) {
+        SendMessage beforeMessage = beforeMessages.get(chatId);
+        String data = (callbackQuery != null) ? callbackQuery.getData() : "";
+        String textCommand = data.replaceAll("/.*", "");
+        String textMessage = Objects.nonNull(message)
+                ? message.getText()
+                : "";
+
+        if ("createNewTraining".equals(textCommand) || textMessage.equals("/create_new_training")) {
+            responseMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+            return;
+        }
     }
 
     private CallbackQuery createNewCallbackQuery(Message message) {

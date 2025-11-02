@@ -109,6 +109,37 @@
         }
       }
     },
+    "/api/get_users_by_username": {
+      "post": {
+        "tags": [
+          "user-info-controller"
+        ],
+        "summary": "Сервис получения информации о пользователях",
+        "operationId": "getUsersByUserName",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerGetUserByUserNameRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerGetUsersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/get_users": {
       "post": {
         "tags": [
@@ -478,15 +509,11 @@
           "user_info"
         ]
       },
-      "RequestContainerGetUsersRequest": {
+      "RequestContainerGetUserByUserNameRequest": {
         "type": "object",
         "properties": {
-          "user_id": {
-            "type": "array",
-            "items": {
-              "type": "integer",
-              "format": "int64"
-            }
+          "user_name": {
+            "type": "string"
           },
           "trace_id": {
             "type": "string",
@@ -581,6 +608,38 @@
             "type": "string"
           }
         }
+      },
+      "RequestContainerGetUsersRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
       },
       "RequestContainerGetTrainingsRequest": {
         "type": "object",
@@ -754,10 +813,10 @@
           "gender": {
             "type": "string",
             "default": "NON",
-            "description": "Допустимые значения: MAN, WOMAN, WOMAN",
+            "description": "Допустимые значения: МУЖЧИНА, ЖЕНЩИНА, WOMAN",
             "enum": [
-              "MAN",
-              "WOMAN",
+              "МУЖЧИНА",
+              "ЖЕНЩИНА",
               "NON"
             ],
             "example": "NON"
