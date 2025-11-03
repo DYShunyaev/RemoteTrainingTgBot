@@ -96,7 +96,7 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
-    private SendMessage chooseDateOfTraining(SendMessage response, String dayOfWeek) {
+    public SendMessage chooseDateOfTraining(SendMessage response, String dayOfWeek) {
         DayOfWeek day = ConvertedUtils.convertToDayOfWeek(dayOfWeek);
         List<LocalDate> options = getDaysFromTraining(LocalDate.now(), day);
 
@@ -134,7 +134,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    private SendMessage chooseMuscleGroup(SendMessage response) {
+    public SendMessage chooseMuscleGroup(SendMessage response) {
         response.setText("Выберете цель тренировки:");
         Set<String> before = Optional.ofNullable(selectedOptions.get(Long.parseLong(response.getChatId())))
                 .orElse(null);

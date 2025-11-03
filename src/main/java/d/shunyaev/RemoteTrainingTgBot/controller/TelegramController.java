@@ -23,8 +23,7 @@ public class TelegramController {
     private final CreateUserComponent createUserComponent;
     private final CreateTrainingComponent createTrainingComponent;
     private final CreateExerciseComponent createExerciseComponent;
-    private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
-    private SendMessage responseMessage = new SendMessage();
+    public final Map<Long, SendMessage> beforeMessages = new HashMap<>();
 
     public TelegramController(
             CreateUserComponent telegramService,
@@ -39,39 +38,42 @@ public class TelegramController {
     }
 
     public SendMessage createController(Update update) {
+        SendMessage responseMessage = new SendMessage();
         CallbackQuery callbackQuery = update.getCallbackQuery();
         Message requestMessage = update.getMessage();
 
         long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
 
-        registrationController(requestMessage);
-        createUserController(callbackQuery, requestMessage, chatId);
-        createTrainingController(callbackQuery, requestMessage, chatId);
-        createExerciseController(callbackQuery, requestMessage, chatId);
+        responseMessage = registrationController(requestMessage, responseMessage);
+        responseMessage = createUserController(callbackQuery, requestMessage, chatId, responseMessage);
+        responseMessage = createTrainingController(callbackQuery, requestMessage, chatId, responseMessage);
+        responseMessage = createExerciseController(callbackQuery, chatId, responseMessage);
 
         beforeMessages.put(chatId, responseMessage);
         return responseMessage;
     }
 
-    private void registrationController(Message requestMessage) {
+    private SendMessage registrationController(Message requestMessage, SendMessage responseMessage) {
         if (Objects.nonNull(requestMessage) && requestMessage.hasText() && "/start".equals(requestMessage.getText())) {
-            responseMessage = registrationComponent.registration(requestMessage);
+            return registrationComponent.registration(requestMessage);
         }
+        return responseMessage;
     }
 
-    private void createUserController(CallbackQuery callbackQuery, Message message, long chatId) {
+    private SendMessage createUserController(CallbackQuery callbackQuery, Message message, long chatId,
+                                             SendMessage responseMessage) {
         SendMessage beforeMessage = beforeMessages.get(chatId);
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
 
         if ("createUser".equals(textCommand)) {
-            responseMessage = createUserComponent.createUser(callbackQuery, chatId);
-            return;
+            return createUserComponent.createUser(callbackQuery, chatId);
+
         }
 
-        if (beforeMessage == null) return;
+        if (beforeMessage == null) return responseMessage;
         if (!data.contains(CREATE_USER.getUrl()) && Objects.nonNull(callbackQuery)) {
-            return;
+            return responseMessage;
         }
 
         if (callbackQuery == null) {
@@ -93,10 +95,14 @@ public class TelegramController {
             callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + userInput);
         }
 
-        responseMessage = createUserComponent.createUser(callbackQuery, chatId);
+        return createUserComponent.createUser(callbackQuery, chatId);
     }
 
-    private void createTrainingController(CallbackQuery callbackQuery, Message message, long chatId) {
+    private SendMessage createTrainingController(
+            CallbackQuery callbackQuery,
+            Message message, long chatId,
+            SendMessage responseMessage
+    ) {
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
         String textMessage = Objects.nonNull(message)
@@ -104,18 +110,20 @@ public class TelegramController {
                 : "";
 
         if ("createNewTraining".equals(textCommand) || textMessage.equals("/create_new_training")) {
-            responseMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+            return createTrainingComponent.createTraining(callbackQuery, chatId);
         }
+        return responseMessage;
     }
 
-    private void createExerciseController(CallbackQuery callbackQuery, Message message, long chatId) {
+    private SendMessage createExerciseController(CallbackQuery callbackQuery, long chatId, SendMessage responseMessage) {
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
 
-        if (data.contains("done")) return;
+        if (data.contains("done")) return responseMessage;
         if ("createNewExercise".equals(textCommand)) {
-            responseMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+            return createExerciseComponent.createExercise(callbackQuery, chatId);
         }
+        return responseMessage;
     }
 
     private CallbackQuery createNewCallbackQuery(Message message) {

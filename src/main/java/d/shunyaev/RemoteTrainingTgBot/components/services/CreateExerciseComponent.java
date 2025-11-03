@@ -28,10 +28,7 @@ public class CreateExerciseComponent {
     private final String approachCallback = "approach/";
     private final String weightCallback = "weight/";
 
-
-    public CreateExerciseComponent(
-            GetTrainingsComponent getTrainingsComponent
-    ) {
+    public CreateExerciseComponent(GetTrainingsComponent getTrainingsComponent) {
         this.getTrainingsComponent = getTrainingsComponent;
     }
 
@@ -54,26 +51,17 @@ public class CreateExerciseComponent {
         } else if (data.matches(quantityCallback + regexRange)) {
             return chooseQuantity(responseMessage, data);
         } else if (data.matches(quantityCallback + regexValue)) {
-            req.setQuantity(
-                    Integer.parseInt(data.replaceAll(quantityCallback, ""))
-            );
+            req.setQuantity(Integer.parseInt(data.replaceAll(quantityCallback, "")));
             return chooseWeight(responseMessage, data);
         } else if (data.matches(weightCallback + regexRange)) {
             return chooseWeight(responseMessage, data);
         } else if (data.matches(weightCallback + regexValue)) {
-            req.setWeight(
-                    Integer.parseInt(data.replaceAll(weightCallback, ""))
-            );
+            req.setWeight(Integer.parseInt(data.replaceAll(weightCallback, "")));
             return chooseApproach(responseMessage, data);
         } else if (data.matches(approachCallback + regexValue)) {
-            req.setApproach(
-                    Integer.parseInt(data.replaceAll(approachCallback, ""))
-            );
+            req.setApproach(Integer.parseInt(data.replaceAll(approachCallback, "")));
             return callSetNewExercise(responseMessage, req, chatId);
-        } else if (
-                Arrays.stream(Exercises.values())
-                        .collect(Collectors.toSet()).contains(Exercises.valueOf(data))
-        ) {
+        } else if (isValidExerciseName(data)) {
             req.setExerciseName(Exercises.valueOf(data).getDescription());
             return chooseQuantity(responseMessage, data);
         }
@@ -81,56 +69,48 @@ public class CreateExerciseComponent {
         return responseMessage;
     }
 
+    private boolean isValidExerciseName(String data) {
+        try {
+            return Arrays.stream(Exercises.values())
+                    .collect(Collectors.toSet())
+                    .contains(Exercises.valueOf(data));
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
     private SendMessage chooseApproach(SendMessage responseMessage, String data) {
-        responseMessage.setText("Выберете колличество подходов:");
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        markup.setKeyboard(
-                setBoundaryValues(data, approachCallback,
-                        IntStream.range(1, 20)
-                                .mapToObj(String::valueOf)
-                                .toList())
-        );
-        responseMessage.setReplyMarkup(markup);
-
+        responseMessage.setText("Выберите количество подходов:");
+        responseMessage.setReplyMarkup(buildGrid(data, approachCallback, IntStream.rangeClosed(1, 19)
+                .mapToObj(String::valueOf)
+                .toList()));
         return responseMessage;
     }
 
     private SendMessage chooseWeight(SendMessage responseMessage, String data) {
-        responseMessage.setText("Выберете вес снаряжения:");
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        markup.setKeyboard(
-                setBoundaryValues(data, weightCallback,
-                        List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300"))
-        );
-        responseMessage.setReplyMarkup(markup);
-
+        responseMessage.setText("Выберите вес снаряжения:");
+        responseMessage.setReplyMarkup(buildGrid(data, weightCallback,
+                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300")));
         return responseMessage;
     }
 
     private SendMessage chooseQuantity(SendMessage responseMessage, String data) {
-        responseMessage.setText("Выберете колличество повторений:");
-
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        markup.setKeyboard(
-                setBoundaryValues(data, quantityCallback, List.of("1-10", "11-20", "21-30"))
-        );
-        responseMessage.setReplyMarkup(markup);
-
+        responseMessage.setText("Выберите количество повторений:");
+        responseMessage.setReplyMarkup(buildGrid(data, quantityCallback,
+                List.of("1-10", "11-20", "21-30")));
         return responseMessage;
     }
 
     private SendMessage addExerciseName(SendMessage responseMessage, long chatId) {
         RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
 
-        responseMessage.setText("Выберете упражнение:");
+        responseMessage.setText("Выберите упражнение:");
         var training = getTrainingsComponent.getTrainingsByChatId(chatId)
                 .getTrainings()
                 .stream()
                 .filter(tr -> tr.getTrainingId().equals(req.getTrainingId()))
                 .findFirst()
-                .get();
+                .orElseThrow();
 
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
@@ -155,48 +135,45 @@ public class CreateExerciseComponent {
         return responseMessage;
     }
 
-    private List<List<InlineKeyboardButton>> setBoundaryValues(String data, String callBack, List<String> boundary) {
+    private InlineKeyboardMarkup buildGrid(String data, String callback, List<String> options) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        List<InlineKeyboardButton> keys = new ArrayList<>();
-        if (data.contains(callBack)) {
-            var dataRepl = Arrays.stream(data.replaceAll(callBack, "")
+        List<InlineKeyboardButton> row = new ArrayList<>();
+
+        if (data.contains(callback)) {
+            var range = Arrays.stream(data.replaceAll(callback, "")
                             .split("-"))
                     .map(Integer::valueOf)
                     .sorted()
                     .toList();
 
-            for (int i = dataRepl.get(0); i <= dataRepl.get(1); i++) {
-                InlineKeyboardButton b = new InlineKeyboardButton();
-                b.setText(String.valueOf(i));
-                b.setCallbackData(
-                        CREATE_NEW_EXERCISE.getUrl()
-                                + callBack
-                                + i);
-                keys.add(b);
-                if (keys.size() == 3) {
-                    keyboard.add(keys);
-                    keys = new ArrayList<>();
+            for (int i = range.get(0); i <= range.get(1); i++) {
+                row.add(createButton(CREATE_NEW_EXERCISE.getUrl() + callback + i, String.valueOf(i)));
+                if (row.size() == 3) {
+                    keyboard.add(row);
+                    row = new ArrayList<>();
                 }
             }
         } else {
-            for (String str : boundary) {
-                InlineKeyboardButton b = new InlineKeyboardButton();
-                b.setText(str);
-                b.setCallbackData(
-                        CREATE_NEW_EXERCISE.getUrl()
-                                + callBack
-                                + str);
-                keys.add(b);
-                if (keys.size() == 3) {
-                    keyboard.add(keys);
-                    keys = new ArrayList<>();
+            for (String opt : options) {
+                row.add(createButton(CREATE_NEW_EXERCISE.getUrl() + callback + opt, opt));
+                if (row.size() == 3) {
+                    keyboard.add(row);
+                    row = new ArrayList<>();
                 }
             }
         }
-        if (keys.size() > 0) {
-            keyboard.add(keys);
-        }
-        return keyboard;
+
+        if (!row.isEmpty()) keyboard.add(row);
+        markup.setKeyboard(keyboard);
+        return markup;
+    }
+
+    private InlineKeyboardButton createButton(String data, String text) {
+        InlineKeyboardButton b = new InlineKeyboardButton();
+        b.setText(text);
+        b.setCallbackData(data);
+        return b;
     }
 
     private SendMessage callSetNewExercise(SendMessage responseMessage,
@@ -216,37 +193,62 @@ public class CreateExerciseComponent {
             }
 
             assert result.getCode() != null;
-            if (result.getCode().equals(200)) {
+            int code = result.getCode();
+
+            if (code == 200) {
                 CashComponent.CREATE_EXERCISE_REQUEST.remove(chatId);
-                responseMessage.setText("Упражнение успешно добавлена");
+                responseMessage.setText("Упражнение успешно добавлено");
 
                 InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-                InlineKeyboardButton first = new InlineKeyboardButton();
-                first.setText("Добавить следующее упражнение");
-                first.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
-                keyboard.add(List.of(first));
+                InlineKeyboardButton next = new InlineKeyboardButton();
+                next.setText("Добавить следующее упражнение");
+                next.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
+                keyboard.add(List.of(next));
 
-                InlineKeyboardButton second = new InlineKeyboardButton();
-                second.setText("Завершить");
-                second.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + "done");
-                keyboard.add(List.of(second));
+                InlineKeyboardButton done = new InlineKeyboardButton();
+                done.setText("Завершить");
+                done.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + "done");
+                keyboard.add(List.of(done));
 
                 markup.setKeyboard(keyboard);
                 responseMessage.setReplyMarkup(markup);
 
-            } else if (result.getCode().equals(-8)) {
+            } else if (code == -8) {
                 assert result.getMessage() != null;
                 responseMessage.setText(result.getMessage());
 
             } else {
                 responseMessage.setText("Ошибка добавления упражнения: \n" +
                         result.getMessage() + "\n Повторите попытку:");
+
+                InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+                InlineKeyboardButton add = new InlineKeyboardButton();
+                add.setText("Добавить упражнение");
+                add.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
+
+                keyboard.add(List.of(add));
+                markup.setKeyboard(keyboard);
+                responseMessage.setReplyMarkup(markup);
+
                 CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
             }
         } else {
             responseMessage.setText("Ошибка добавления упражнения:\n Повторите попытку:");
+
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+            InlineKeyboardButton add = new InlineKeyboardButton();
+            add.setText("Добавить упражнение");
+            keyboard.add(List.of(add));
+
+            markup.setKeyboard(keyboard);
+            responseMessage.setReplyMarkup(markup);
+
             CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
         }
 

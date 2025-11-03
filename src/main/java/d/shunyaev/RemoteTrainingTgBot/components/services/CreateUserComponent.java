@@ -59,8 +59,15 @@ public class CreateUserComponent {
         SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(chatId);
 
-        if (usersBotRepository.getRegistrationFlagByChatId(chatId) == 1) {
+        if (Objects.nonNull(callbackQuery) && Objects.isNull(callbackQuery.getData())) {
+            return responseMessage;
+        }
+        if (usersBotRepository.getRegistrationFlagByChatId(chatId) == 1
+                && callbackQuery.getData().contains(CREATE_USER.getUrl())) {
             responseMessage.setText("Пользователь уже зарегистрирован");
+            return responseMessage;
+        } else if (usersBotRepository.getRegistrationFlagByChatId(chatId) == 1
+                && !callbackQuery.getData().contains(CREATE_USER.getUrl())) {
             return responseMessage;
         }
 
