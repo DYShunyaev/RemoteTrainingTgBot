@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -40,7 +41,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        sendMessage(telegramController.mainController(update));
+        sendMessage(telegramController.createController(update));
     }
 
     @Override
@@ -55,7 +56,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     public void sendMessage(SendMessage message) {
         try {
-            execute(message);
+            if (Objects.nonNull(message.getChatId())) {
+                execute(message);
+            }
         } catch (TelegramApiException e) {
             log.error("Error occurred: " + e.getMessage());
         }

@@ -38,7 +38,7 @@ public class TelegramController {
         this.createExerciseComponent = createExerciseComponent;
     }
 
-    public SendMessage mainController(Update update) {
+    public SendMessage createController(Update update) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         Message requestMessage = update.getMessage();
 
@@ -47,6 +47,8 @@ public class TelegramController {
         registrationController(requestMessage);
         createUserController(callbackQuery, requestMessage, chatId);
         createTrainingController(callbackQuery, requestMessage, chatId);
+        createExerciseController(callbackQuery, requestMessage, chatId);
+
         beforeMessages.put(chatId, responseMessage);
         return responseMessage;
     }
@@ -68,6 +70,9 @@ public class TelegramController {
         }
 
         if (beforeMessage == null) return;
+        if (!data.contains(CREATE_USER.getUrl()) && Objects.nonNull(callbackQuery)) {
+            return;
+        }
 
         if (callbackQuery == null) {
             callbackQuery = createNewCallbackQuery(message);
@@ -106,10 +111,8 @@ public class TelegramController {
     private void createExerciseController(CallbackQuery callbackQuery, Message message, long chatId) {
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
-        String textMessage = Objects.nonNull(message)
-                ? message.getText()
-                : "";
 
+        if (data.contains("done")) return;
         if ("createNewExercise".equals(textCommand)) {
             responseMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
         }

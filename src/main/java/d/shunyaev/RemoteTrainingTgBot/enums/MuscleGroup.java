@@ -1,6 +1,9 @@
 package d.shunyaev.RemoteTrainingTgBot.enums;
 
+import jakarta.ws.rs.NotFoundException;
 import lombok.Getter;
+
+import java.util.Arrays;
 
 @Getter
 public enum MuscleGroup {
@@ -18,6 +21,14 @@ public enum MuscleGroup {
 
     MuscleGroup(String description) {
         this.description = description;
+    }
+
+    public static MuscleGroup getByDescription(String description) {
+        return Arrays.stream(MuscleGroup.values())
+                .filter(val -> val.getDescription().equals(description))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Не удалось найти значение с описанием %s"
+                        .formatted(description)));
     }
 
 }
