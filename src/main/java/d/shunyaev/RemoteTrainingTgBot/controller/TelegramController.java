@@ -23,7 +23,7 @@ public class TelegramController {
     private final CreateUserComponent createUserComponent;
     private final CreateTrainingComponent createTrainingComponent;
     private final CreateExerciseComponent createExerciseComponent;
-    public final Map<Long, SendMessage> beforeMessages = new HashMap<>();
+    private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
 
     public TelegramController(
             CreateUserComponent telegramService,

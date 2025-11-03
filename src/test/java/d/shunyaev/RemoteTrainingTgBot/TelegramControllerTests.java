@@ -6,17 +6,21 @@ import d.shunyaev.RemoteTrainingTgBot.components.services.CreateUserComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.services.RegistrationComponent;
 import d.shunyaev.RemoteTrainingTgBot.controller.TelegramController;
 import d.shunyaev.RemoteTrainingTgBot.utils.RandomUtils;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.*;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 import static org.mockito.Mockito.when;
@@ -147,7 +151,7 @@ public class TelegramControllerTests {
         callbackQuery.setMessage(message);
         callbackQuery.setData(CREATE_USER.getUrl() + EMAIL.getUrl() + email);
 
-        telegramController.beforeMessages.put(chatId, beforeMessage);
+        putBeforeMessage(beforeMessage);
 
         when(createUserComponent.createUser(callbackQuery, chatId)).thenReturn(expectedMessage);
 
@@ -174,7 +178,8 @@ public class TelegramControllerTests {
         callbackQuery.setMessage(message);
         callbackQuery.setData(CREATE_USER.getUrl() + WEIGHT.getUrl() + weight);
 
-        telegramController.beforeMessages.put(chatId, beforeMessage);
+        putBeforeMessage(beforeMessage);
+
 
         when(createUserComponent.createUser(callbackQuery, chatId)).thenReturn(expectedMessage);
 
@@ -201,7 +206,8 @@ public class TelegramControllerTests {
         callbackQuery.setMessage(message);
         callbackQuery.setData(CREATE_USER.getUrl() + HEIGHT.getUrl() + height);
 
-        telegramController.beforeMessages.put(chatId, beforeMessage);
+        putBeforeMessage(beforeMessage);
+
 
         when(createUserComponent.createUser(callbackQuery, chatId)).thenReturn(expectedMessage);
 
@@ -214,7 +220,7 @@ public class TelegramControllerTests {
     public void addDayOfBirthTest() {
         var pattern = "dd.MM.yyyy";
         var dateOfBirth = RandomUtils.generateRandomDate(
-                LocalDate.of(1970,1,1),
+                LocalDate.of(1970, 1, 1),
                 LocalDate.now().minusYears(18),
                 pattern
         );
@@ -233,7 +239,7 @@ public class TelegramControllerTests {
         callbackQuery.setMessage(message);
         callbackQuery.setData(CREATE_USER.getUrl() + DATE_OF_BIRTH.getUrl() + dateOfBirth);
 
-        telegramController.beforeMessages.put(chatId, beforeMessage);
+        putBeforeMessage(beforeMessage);
 
         when(createUserComponent.createUser(callbackQuery, chatId)).thenReturn(expectedMessage);
 
@@ -260,7 +266,7 @@ public class TelegramControllerTests {
         callbackQuery.setMessage(message);
         callbackQuery.setData(CREATE_USER.getUrl() + LAST_NAME.getUrl() + lastName);
 
-        telegramController.beforeMessages.put(chatId, beforeMessage);
+        putBeforeMessage(beforeMessage);
 
         when(createUserComponent.createUser(callbackQuery, chatId)).thenReturn(expectedMessage);
 
@@ -342,5 +348,17 @@ public class TelegramControllerTests {
         var actualMessage = telegramController.createController(update);
 
         Assertions.assertEquals(expectedMessage, actualMessage);
+    }
+
+    @SneakyThrows
+    private void putBeforeMessage(SendMessage beforeMessage) {
+        Map<Long, SendMessage> mockMap = Mockito.mock(Map.class);
+
+        when(mockMap.get(Mockito.anyLong())).thenReturn(beforeMessage);
+
+        Field field = TelegramController.class.getDeclaredField("beforeMessages");
+        field.setAccessible(true);
+        field.set(telegramController, mockMap);
+
     }
 }
