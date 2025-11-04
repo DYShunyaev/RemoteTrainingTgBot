@@ -81,7 +81,7 @@ public class CreateExerciseComponent {
 
     private SendMessage chooseApproach(SendMessage responseMessage, String data) {
         responseMessage.setText("Выберите количество подходов:");
-        responseMessage.setReplyMarkup(buildGrid(data, approachCallback, IntStream.rangeClosed(1, 19)
+        responseMessage.setReplyMarkup(buildGrid(data, approachCallback, IntStream.rangeClosed(1, 10)
                 .mapToObj(String::valueOf)
                 .toList()));
         return responseMessage;
@@ -104,34 +104,40 @@ public class CreateExerciseComponent {
     private SendMessage addExerciseName(SendMessage responseMessage, long chatId) {
         RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
 
-        responseMessage.setText("Выберите упражнение:");
         var training = getTrainingsComponent.getTrainingsByChatId(chatId)
                 .getTrainings()
                 .stream()
                 .filter(tr -> tr.getTrainingId().equals(req.getTrainingId()))
                 .findFirst()
                 .orElseThrow();
+        String text;
 
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        if (training.getMuscleGroup().contains(MuscleGroup.OTHER.getDescription())) {
+            text = "Введите название упражнения:";
+        } else {
+            text = "Выберите упражнение:";
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        var muscleGroup = Arrays.stream(training.getMuscleGroup().split(" \\+ "))
-                .map(MuscleGroup::getByDescription)
-                .collect(Collectors.toSet());
+            var muscleGroup = Arrays.stream(training.getMuscleGroup().split(" \\+ "))
+                    .map(MuscleGroup::getByDescription)
+                    .collect(Collectors.toSet());
 
-        var exercises = Arrays.stream(Exercises.values())
-                .filter(exerc -> muscleGroup.contains(exerc.getMuscleGroup()))
-                .toList();
+            var exercises = Arrays.stream(Exercises.values())
+                    .filter(exerc -> muscleGroup.contains(exerc.getMuscleGroup()))
+                    .toList();
 
-        for (Exercises exercise : exercises) {
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(exercise.getDescription());
-            b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + exercise.name());
-            keyboard.add(List.of(b));
+            for (Exercises exercise : exercises) {
+                InlineKeyboardButton b = new InlineKeyboardButton();
+                b.setText(exercise.getDescription());
+                b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + exercise.name());
+                keyboard.add(List.of(b));
+            }
+
+            markup.setKeyboard(keyboard);
+            responseMessage.setReplyMarkup(markup);
         }
-
-        markup.setKeyboard(keyboard);
-        responseMessage.setReplyMarkup(markup);
+        responseMessage.setText(text);
         return responseMessage;
     }
 
