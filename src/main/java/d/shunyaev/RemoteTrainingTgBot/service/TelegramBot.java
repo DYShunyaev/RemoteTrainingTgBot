@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -31,6 +32,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         listOfCommands.add(new BotCommand("/start", "Начать работу"));
         listOfCommands.add(new BotCommand("/create_new_training", "Создать новую тренировку"));
+        listOfCommands.add(new BotCommand("/get_my_trainings", "Мои тренировки"));
 
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
@@ -41,7 +43,16 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        sendMessage(telegramController.createController(update));
+        if (Objects.nonNull(update.getMessage()) && update.getMessage().hasText()
+                && update.getMessage().getText().contains("get")) {
+            sendMessages(telegramController.getController(update));
+        } else if (Objects.nonNull(update.getCallbackQuery()) && Objects.nonNull(update.getCallbackQuery().getData())
+                && update.getCallbackQuery().getData().contains("editMessage")) {
+            sendMessage(telegramController.editMessageController(update));
+        }
+        else {
+            sendMessage(telegramController.createController(update));
+        }
     }
 
     @Override
@@ -54,7 +65,21 @@ public class TelegramBot extends TelegramLongPollingBot {
         return config.getToken();
     }
 
+    public void sendMessages(List<SendMessage> messageList) {
+        messageList.forEach(this::sendMessage);
+    }
+
     public void sendMessage(SendMessage message) {
+        try {
+            if (Objects.nonNull(message.getChatId())) {
+                execute(message);
+            }
+        } catch (TelegramApiException e) {
+            log.error("Error occurred: " + e.getMessage());
+        }
+    }
+
+    public void sendMessage(EditMessageText message) {
         try {
             if (Objects.nonNull(message.getChatId())) {
                 execute(message);

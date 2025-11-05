@@ -2,7 +2,7 @@ package d.shunyaev.RemoteTrainingTgBot.components.services;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoComponent;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
@@ -33,14 +33,14 @@ public class CreateTrainingComponent {
     private final RegistrationComponent registrationComponent;
     private final ValidateComponent validateComponent;
     private final GetUserInfoComponent getUserInfoComponent;
-    private final GetTrainingsComponent getTrainingsComponent;
+    private final GetTrainingsSteps getTrainingsComponent;
     private final Map<Long, Set<String>> selectedOptions = new HashMap<>();
 
     public CreateTrainingComponent(
             RegistrationComponent registrationComponent,
             ValidateComponent validateComponent,
             GetUserInfoComponent getUserInfoComponent,
-            GetTrainingsComponent getTrainingsComponent
+            GetTrainingsSteps getTrainingsComponent
     ) {
         this.registrationComponent = registrationComponent;
         this.validateComponent = validateComponent;

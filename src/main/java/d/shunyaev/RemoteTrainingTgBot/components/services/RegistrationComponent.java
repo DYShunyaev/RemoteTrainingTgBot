@@ -4,6 +4,7 @@ import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
+import d.shunyaev.RemoteTrainingTgBot.utils.FileHelper;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -67,7 +68,7 @@ public class RegistrationComponent {
     }
 
     public SendMessage addRegistrationButton(@NonNull SendMessage responseMessage, long chatId) {
-        String helloText = "helloText";
+        String helloText = FileHelper.readFileAsString("helloMessage.txt");
         responseMessage.setChatId(chatId);
         responseMessage.setText(helloText);
 

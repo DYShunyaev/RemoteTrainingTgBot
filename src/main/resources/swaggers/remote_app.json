@@ -450,9 +450,9 @@
             "type": "integer",
             "format": "int64"
           },
-          "training_date": {
-            "type": "string",
-            "format": "date"
+          "training_id": {
+            "type": "integer",
+            "format": "int64"
           },
           "trace_id": {
             "type": "string",

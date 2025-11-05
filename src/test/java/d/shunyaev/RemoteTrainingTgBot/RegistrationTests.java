@@ -5,6 +5,7 @@ import d.shunyaev.RemoteTrainingTgBot.components.services.RegistrationComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
+import d.shunyaev.RemoteTrainingTgBot.utils.FileHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.RandomUtils;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import org.junit.jupiter.api.Assertions;
@@ -64,7 +65,7 @@ public class RegistrationTests {
         var expectedResponse = new SendMessage();
         var requestAfter = CashComponent.CREATE_USER_REQUESTS;
 
-        String helloText = "helloText";
+        String helloText = FileHelper.readFileAsString("helloMessage.txt");
         expectedResponse.setChatId(chatId);
         expectedResponse.setText(helloText);
 

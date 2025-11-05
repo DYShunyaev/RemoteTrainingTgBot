@@ -1,7 +1,7 @@
 package d.shunyaev.RemoteTrainingTgBot.components.services;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.Exercises;
@@ -23,12 +23,12 @@ import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCI
 @Component
 public class CreateExerciseComponent {
 
-    private final GetTrainingsComponent getTrainingsComponent;
+    private final GetTrainingsSteps getTrainingsComponent;
     private final String quantityCallback = "quantity/";
     private final String approachCallback = "approach/";
     private final String weightCallback = "weight/";
 
-    public CreateExerciseComponent(GetTrainingsComponent getTrainingsComponent) {
+    public CreateExerciseComponent(GetTrainingsSteps getTrainingsComponent) {
         this.getTrainingsComponent = getTrainingsComponent;
     }
 

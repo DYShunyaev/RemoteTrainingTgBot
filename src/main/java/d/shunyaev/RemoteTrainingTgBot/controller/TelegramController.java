@@ -1,16 +1,15 @@
 package d.shunyaev.RemoteTrainingTgBot.controller;
 
-import d.shunyaev.RemoteTrainingTgBot.components.services.CreateExerciseComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.services.CreateTrainingComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.services.RegistrationComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.services.CreateUserComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.services.*;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,18 +22,45 @@ public class TelegramController {
     private final CreateUserComponent createUserComponent;
     private final CreateTrainingComponent createTrainingComponent;
     private final CreateExerciseComponent createExerciseComponent;
+    private final GetTrainingsComponent getTrainingsComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
 
     public TelegramController(
             CreateUserComponent telegramService,
             RegistrationComponent registrationComponent,
             CreateTrainingComponent createTrainingComponent,
-            CreateExerciseComponent createExerciseComponent
+            CreateExerciseComponent createExerciseComponent,
+            GetTrainingsComponent getTrainingsComponent
     ) {
         this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
         this.createTrainingComponent = createTrainingComponent;
         this.createExerciseComponent = createExerciseComponent;
+        this.getTrainingsComponent = getTrainingsComponent;
+    }
+
+    public EditMessageText editMessageController(Update update) {
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        Message requestMessage = update.getMessage();
+
+        long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+        EditMessageText editMessageText;
+
+        editMessageText = getTrainingsComponent.setTrainingIsDone(callbackQuery, chatId);
+
+        return editMessageText;
+    }
+
+    public List<SendMessage> getController(Update update) {
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        Message requestMessage = update.getMessage();
+
+        long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+
+        List<SendMessage> responseMessages;
+
+        responseMessages = getTrainingsComponent.getTrainings(requestMessage, chatId);
+        return responseMessages;
     }
 
     public SendMessage createController(Update update) {

@@ -1,7 +1,7 @@
 package d.shunyaev.RemoteTrainingTgBot;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.components.services.CreateExerciseComponent;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.Exercises;
@@ -48,7 +48,7 @@ public class CreateExerciseTests {
     @InjectMocks
     private CreateExerciseComponent createExerciseComponent;
     @Mock
-    private GetTrainingsComponent getTrainingsComponent;
+    private GetTrainingsSteps getTrainingsComponent;
     private CallbackQuery callbackQuery;
     private long chatId;
 
