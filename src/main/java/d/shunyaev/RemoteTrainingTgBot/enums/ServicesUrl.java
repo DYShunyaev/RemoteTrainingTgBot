@@ -10,6 +10,7 @@ public enum ServicesUrl {
     DATE_OF_BIRTH("dateOfBirth/"),
     LAST_NAME("lastName/"),
     CREATE_NEW_TRAINING("createNewTraining/"),
+    GENERATE_NEW_TRAINING("generateNewTraining/"),
     CREATE_NEW_EXERCISE("createNewExercise/")
     ;
     private final String url;

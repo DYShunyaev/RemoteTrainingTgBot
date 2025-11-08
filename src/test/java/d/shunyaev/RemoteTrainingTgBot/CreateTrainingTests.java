@@ -65,8 +65,6 @@ public class CreateTrainingTests {
         callbackQuery = new CallbackQuery();
         callbackQuery.setData(CREATE_NEW_TRAINING.getUrl());
         callbackQuery.setFrom(user);
-
-        when(validateComponent.isRegistration(anyLong())).thenReturn(true);
     }
 
     private static Stream<String> daysOfWeek() {
@@ -124,7 +122,7 @@ public class CreateTrainingTests {
         SendMessage expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
 
-        expectedMessage = createTrainingComponent.chooseDateOfTraining(expectedMessage, dayOfWeek);
+        expectedMessage = createTrainingComponent.chooseDateOfTraining(expectedMessage, dayOfWeek, CREATE_NEW_TRAINING);
 
         SendMessage finalExpectedMessage = expectedMessage;
         var expectedDayOfWeek = Arrays.stream(DayOfWeekEnum.values())

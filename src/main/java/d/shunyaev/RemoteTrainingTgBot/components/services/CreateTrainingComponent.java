@@ -7,9 +7,12 @@ import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoC
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.MuscleGroup;
+import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
 import d.shunyaev.RemoteTrainingTgBot.utils.ConvertedUtils;
 import d.shunyaev.model.RequestContainerCreateTrainingRequest;
 import d.shunyaev.model.RequestContainerCreateTrainingRequest.DayOfWeekEnum;
+import d.shunyaev.model.RequestContainerGenerateTrainingRequest;
+import d.shunyaev.model.RequestContainerGenerateTrainingRequest.DayOfWeekFirstTrainingEnum;
 import d.shunyaev.model.ResponseContainerResult;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,8 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCISE;
-import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_TRAINING;
+import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
 public class CreateTrainingComponent {
@@ -48,8 +50,7 @@ public class CreateTrainingComponent {
         this.getTrainingsComponent = getTrainingsComponent;
     }
 
-    public SendMessage createTraining(CallbackQuery callbackQuery, long chatId) {
-        RequestContainerCreateTrainingRequest req = getTrainingRequest(chatId);
+    public SendMessage createOrGenerate(long chatId) {
         SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(chatId);
 
@@ -59,18 +60,44 @@ public class CreateTrainingComponent {
             return responseMessage;
         }
 
+        responseMessage.setText("Выберете нужный вариант:");
+
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+        InlineKeyboardButton first = new InlineKeyboardButton();
+        first.setText("Добавить тренировку самостоятельно");
+        first.setCallbackData(CREATE_NEW_TRAINING.getUrl());
+        keyboard.add(List.of(first));
+
+        InlineKeyboardButton second = new InlineKeyboardButton();
+        second.setText("Сгенерировать тренировку");
+        second.setCallbackData(GENERATE_NEW_TRAINING.getUrl());
+        keyboard.add(List.of(second));
+
+        markup.setKeyboard(keyboard);
+        responseMessage.setReplyMarkup(markup);
+
+        return responseMessage;
+    }
+
+    public SendMessage createTraining(CallbackQuery callbackQuery, long chatId) {
+        RequestContainerCreateTrainingRequest req = getTrainingRequest(chatId);
+        SendMessage responseMessage = new SendMessage();
+        responseMessage.setChatId(chatId);
+
         String data = Optional.ofNullable(callbackQuery)
                 .map(CallbackQuery::getData)
                 .map(d -> d.replaceAll(CREATE_NEW_TRAINING.getUrl(), ""))
                 .orElse("");
 
-        if (data.isEmpty()) return chooseDayOfWeek(responseMessage);
+        if (data.isEmpty()) return chooseDayOfWeek(responseMessage, CREATE_NEW_TRAINING);
 
         if (Arrays.stream(DayOfWeekEnum.values()).map(DayOfWeekEnum::getValue)
                 .collect(Collectors.toSet()).contains(data)) {
             req.setDayOfWeek(DayOfWeekEnum.fromValue(data));
             req.setUserId(getUserInfoComponent.getUserId(callbackQuery.getFrom().getUserName()));
-            return chooseDateOfTraining(responseMessage, data);
+            return chooseDateOfTraining(responseMessage, data, CREATE_NEW_TRAINING);
         }
 
         if (data.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
@@ -96,7 +123,71 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
-    public SendMessage chooseDateOfTraining(SendMessage response, String dayOfWeek) {
+    public SendMessage generateNewTraining(CallbackQuery callbackQuery, long chatId) {
+        RequestContainerGenerateTrainingRequest req = getGenerateTrainingRequest(chatId);
+        SendMessage responseMessage = new SendMessage();
+        responseMessage.setChatId(chatId);
+
+        String data = Optional.ofNullable(callbackQuery)
+                .map(CallbackQuery::getData)
+                .map(d -> d.replaceAll(GENERATE_NEW_TRAINING.getUrl(), ""))
+                .orElse("");
+
+        if (data.isEmpty()) {
+            return chooseDayOfWeek(responseMessage, GENERATE_NEW_TRAINING);
+        } else if (Arrays.stream(DayOfWeekFirstTrainingEnum.values())
+                .map(DayOfWeekFirstTrainingEnum::getValue)
+                .collect(Collectors.toSet()).contains(data)) {
+            req.setDayOfWeekFirstTraining(DayOfWeekFirstTrainingEnum.fromValue(data));
+            req.setUserId(getUserInfoComponent.getUserId(callbackQuery.getFrom().getUserName()));
+            return chooseDateOfTraining(responseMessage, data, GENERATE_NEW_TRAINING);
+        } else if (data.matches("^\\d{4}-\\d{2}-\\d{2}$")) {
+            req.setDateFirstTraining(data);
+            return chooseCountOfTraining(responseMessage, req.getDayOfWeekFirstTraining());
+        } else if (data.matches("\\d")) {
+            req.setCount(Integer.parseInt(data));
+            return callGenerateNewTraining(responseMessage, req, chatId);
+        }
+
+        return responseMessage;
+    }
+
+    public SendMessage chooseCountOfTraining(SendMessage response, DayOfWeekFirstTrainingEnum day) {
+        response.setText("Выберете количество тернировок в неделе");
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        int rangeEnd = 0;
+
+        switch (day) {
+            case u -> rangeEnd = 8;
+            case u2 -> rangeEnd = 7;
+            case u3 -> rangeEnd = 6;
+            case u4 -> rangeEnd = 5;
+            case u5 -> rangeEnd = 4;
+            case u6 -> rangeEnd = 3;
+            case u7 -> rangeEnd = 2;
+        }
+
+        for (int i = 1; i < rangeEnd; i++) {
+            InlineKeyboardButton b = new InlineKeyboardButton();
+            b.setText(String.valueOf(i));
+            b.setCallbackData(GENERATE_NEW_TRAINING.getUrl() + i);
+            row.add(b);
+            if (row.size() == 3) {
+                keyboard.add(row);
+                row = new ArrayList<>();
+            }
+        }
+
+        if (!row.isEmpty()) keyboard.add(row);
+        markup.setKeyboard(keyboard);
+
+        response.setReplyMarkup(markup);
+        return response;
+    }
+
+    public SendMessage chooseDateOfTraining(SendMessage response, String dayOfWeek, ServicesUrl url) {
         DayOfWeek day = ConvertedUtils.convertToDayOfWeek(dayOfWeek);
         List<LocalDate> options = getDaysFromTraining(LocalDate.now(), day);
 
@@ -107,7 +198,7 @@ public class CreateTrainingComponent {
         for (LocalDate d : options) {
             InlineKeyboardButton b = new InlineKeyboardButton();
             b.setText(d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d));
-            b.setCallbackData(CREATE_NEW_TRAINING.getUrl() + d);
+            b.setCallbackData(url.getUrl() + d);
             keyboard.add(List.of(b));
         }
 
@@ -116,7 +207,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    private SendMessage chooseDayOfWeek(SendMessage response) {
+    private SendMessage chooseDayOfWeek(SendMessage response, ServicesUrl url) {
         response.setText("Выберете день недели тренировки:");
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
@@ -125,7 +216,7 @@ public class CreateTrainingComponent {
             InlineKeyboardButton b = new InlineKeyboardButton();
             String value = day.getValue();
             b.setText(value);
-            b.setCallbackData(CREATE_NEW_TRAINING.getUrl() + value);
+            b.setCallbackData(url.getUrl() + value);
             keyboard.add(List.of(b));
         }
 
@@ -218,6 +309,38 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
+    private SendMessage callGenerateNewTraining(SendMessage responseMessage,
+                                                RequestContainerGenerateTrainingRequest request, long chatId) {
+        if (Objects.nonNull(request.getDateFirstTraining()) &&
+        Objects.nonNull(request.getCount()) &&
+        Objects.nonNull(request.getDayOfWeekFirstTraining()) &&
+        Objects.nonNull(request.getUserId())) {
+            ResponseContainerResult result;
+            try {
+                result = RemoteAppController.getTrainingControllerApi().generateTraining(request);
+            } catch (BadRequestException e) {
+                result = e.getResponseBody();
+            }
+            if (result.getCode().equals(200)) {
+                CashComponent.GENERATE_TRAINING_REQUESTS.remove(chatId);
+                responseMessage.setText("Тренировка успешно добавлена");
+            } else if (result.getCode().equals(-8)) {
+                assert result.getMessage() != null;
+                responseMessage.setText(result.getMessage());
+
+            } else {
+                responseMessage.setText("Ошибка добавления тренировки: \n" +
+                        result.getMessage() + "\n Повторите попытку:");
+                CashComponent.CREATE_TRAINING_REQUESTS.put(chatId, new RequestContainerCreateTrainingRequest());
+            }
+        } else {
+            responseMessage.setText("Ошибка добавления тренировки:\n Повторите попытку:");
+            CashComponent.GENERATE_TRAINING_REQUESTS.put(chatId, new RequestContainerGenerateTrainingRequest());
+        }
+
+        return responseMessage;
+    }
+
     private List<LocalDate> getDaysFromTraining(LocalDate date, DayOfWeek day) {
         YearMonth ym = YearMonth.from(date);
         List<LocalDate> days = getDaysForMonth(ym, date.getDayOfMonth(), day);
@@ -236,4 +359,10 @@ public class CreateTrainingComponent {
         return CashComponent.CREATE_TRAINING_REQUESTS.computeIfAbsent(
                 chatId, k -> new RequestContainerCreateTrainingRequest());
     }
+
+    private RequestContainerGenerateTrainingRequest getGenerateTrainingRequest(long chatId) {
+        return CashComponent.GENERATE_TRAINING_REQUESTS.computeIfAbsent(
+                chatId, k -> new RequestContainerGenerateTrainingRequest());
+    }
+
 }

@@ -277,13 +277,12 @@ public class TelegramControllerTests {
 
     @Test
     public void createNewTrainingTest() {
-        Message message = new Message();
-        message.setText("/create_new_training");
-        message.setFrom(user);
-        message.setChat(new Chat(chatId, ""));
-        update.setMessage(message);
+        var callbackQuery = new CallbackQuery();
+        callbackQuery.setFrom(user);
+        callbackQuery.setData("createNewTraining");
+        update.setCallbackQuery(callbackQuery);
 
-        when(createTrainingComponent.createTraining(null, chatId)).thenReturn(expectedMessage);
+        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
 
         var actualMessage = telegramController.createController(update);
 

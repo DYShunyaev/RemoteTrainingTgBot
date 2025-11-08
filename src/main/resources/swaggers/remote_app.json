@@ -233,6 +233,68 @@
         }
       }
     },
+    "/api/delete_training": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис удаления тренировки",
+        "operationId": "deleteTraining",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerDeleteTrainingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delete_exercise": {
+      "post": {
+        "tags": [
+          "exercise-controller"
+        ],
+        "summary": "Сервис удаления упражнения",
+        "operationId": "deleteExercise",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerDeleteExerciseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/create_user": {
       "post": {
         "tags": [
@@ -788,6 +850,64 @@
             "format": "date",
             "default": "2025-09-22",
             "description": "Дата тренировки"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerDeleteTrainingRequest": {
+        "type": "object",
+        "properties": {
+          "training_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerDeleteExerciseRequest": {
+        "type": "object",
+        "properties": {
+          "exercise_id": {
+            "type": "integer",
+            "format": "int64"
           },
           "trace_id": {
             "type": "string",

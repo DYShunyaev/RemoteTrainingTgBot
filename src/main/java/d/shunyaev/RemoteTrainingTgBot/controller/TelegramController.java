@@ -135,8 +135,14 @@ public class TelegramController {
                 ? message.getText()
                 : "";
 
-        if ("createNewTraining".equals(textCommand) || textMessage.equals("/create_new_training")) {
+        if (textMessage.equals("/create_new_training")) {
+            return createTrainingComponent.createOrGenerate(chatId);
+        }
+
+        if ("createNewTraining".equals(textCommand)) {
             return createTrainingComponent.createTraining(callbackQuery, chatId);
+        } else if ("generateNewTraining".equals(textCommand)) {
+            return createTrainingComponent.generateNewTraining(callbackQuery, chatId);
         }
         return responseMessage;
     }
