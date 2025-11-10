@@ -1,7 +1,8 @@
 package d.shunyaev.RemoteTrainingTgBot;
 
+import d.shunyaev.RemoteTrainingTgBot.components.BuildGridComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsSteps;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.components.services.CreateExerciseComponent;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.Exercises;
@@ -12,7 +13,6 @@ import d.shunyaev.model.RequestContainerCreateExerciseRequest;
 import d.shunyaev.model.ResponseContainerGetTrainingsResponse;
 import d.shunyaev.model.ResponseContainerResult;
 import d.shunyaev.model.Trainings;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +29,6 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +46,9 @@ public class CreateExerciseTests {
     @InjectMocks
     private CreateExerciseComponent createExerciseComponent;
     @Mock
-    private GetTrainingsSteps getTrainingsComponent;
+    private BuildGridComponent buildGridComponent;
+    @Mock
+    private TrainingsSteps getTrainingsComponent;
     private CallbackQuery callbackQuery;
     private long chatId;
 
@@ -219,8 +219,8 @@ public class CreateExerciseTests {
         var expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество повторений:");
-        expectedMessage.setReplyMarkup(buildGrid(data, getCallback("quantityCallback"),
-                List.of("1-10", "11-20", "21-30")));
+        expectedMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.quantityCallback,
+                List.of("1-10", "11-20", "21-30"), CREATE_NEW_EXERCISE.getUrl()));
 
         Assertions.assertEquals(expectedMessage, actualMessage);
     }
@@ -228,7 +228,7 @@ public class CreateExerciseTests {
     @ParameterizedTest
     @MethodSource("quantityRange")
     public void chooseQuantityRangeTest(String data) {
-        String callback = getCallback("quantityCallback");
+        String callback = buildGridComponent.quantityCallback;
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + callback + data);
 
         var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
@@ -236,7 +236,9 @@ public class CreateExerciseTests {
         var expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество повторений:");
-        expectedMessage.setReplyMarkup(buildGrid(callback + data, callback, List.of("1-10", "11-20", "21-30")));
+        expectedMessage.setReplyMarkup(buildGridComponent
+                .buildGrid(callback + data, callback, List.of("1-10", "11-20", "21-30"),
+                        CREATE_NEW_EXERCISE.getUrl()));
 
         Assertions.assertEquals(expectedMessage, actualMessage);
     }
@@ -244,7 +246,7 @@ public class CreateExerciseTests {
     @Test
     public void chooseWeightTest() {
         Integer data = (int) RandomUtils.generateRandomLong(1, 30);
-        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + getCallback("quantityCallback") + data);
+        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.quantityCallback + data);
 
         var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
@@ -252,8 +254,9 @@ public class CreateExerciseTests {
         var expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите вес снаряжения:");
-        expectedMessage.setReplyMarkup(buildGrid(data.toString(), getCallback("weightCallback"),
-                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300")));
+        expectedMessage.setReplyMarkup(buildGridComponent
+                .buildGrid(data.toString(), buildGridComponent.weightCallback,
+                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300"), CREATE_NEW_EXERCISE.getUrl()));
 
         Assertions.assertAll(
                 () -> Assertions.assertEquals(expectedMessage, actualMessage),
@@ -264,7 +267,7 @@ public class CreateExerciseTests {
     @ParameterizedTest
     @MethodSource("weightRange")
     public void chooseWeightRangeTest(String data) {
-        String callback = getCallback("weightCallback");
+        String callback = buildGridComponent.weightCallback;
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + callback + data);
 
         var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
@@ -272,8 +275,9 @@ public class CreateExerciseTests {
         var expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите вес снаряжения:");
-        expectedMessage.setReplyMarkup(buildGrid(callback + data, callback,
-                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300")));
+        expectedMessage.setReplyMarkup(buildGridComponent
+                .buildGrid(callback + data, callback,
+                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300"), CREATE_NEW_EXERCISE.getUrl()));
 
         Assertions.assertEquals(expectedMessage, actualMessage);
     }
@@ -281,7 +285,7 @@ public class CreateExerciseTests {
     @Test
     public void chooseApproachTest() {
         Integer data = (int) RandomUtils.generateRandomLong(1, 300);
-        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + getCallback("weightCallback") + data);
+        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.weightCallback + data);
 
         var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
@@ -289,10 +293,11 @@ public class CreateExerciseTests {
         var expectedMessage = new SendMessage();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество подходов:");
-        expectedMessage.setReplyMarkup(buildGrid(data.toString(), getCallback("approachCallback"),
+        expectedMessage.setReplyMarkup(buildGridComponent
+                .buildGrid(data.toString(), buildGridComponent.approachCallback,
                 IntStream.rangeClosed(1, 10)
                         .mapToObj(String::valueOf)
-                        .toList()));
+                        .toList(), CREATE_NEW_EXERCISE.getUrl()));
 
         Assertions.assertAll(
                 () -> Assertions.assertEquals(expectedMessage, actualMessage),
@@ -310,7 +315,7 @@ public class CreateExerciseTests {
                 .weight(30)
                 .quantity(4);
 
-        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + getCallback("approachCallback") + data);
+        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
 
         ExerciseControllerApi mockApi = mock(ExerciseControllerApi.class);
         SendMessage actualMessage;
@@ -363,7 +368,7 @@ public class CreateExerciseTests {
                 .weight(30)
                 .quantity(4);
 
-        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + getCallback("approachCallback") + data);
+        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
 
         ExerciseControllerApi mockApi = mock(ExerciseControllerApi.class);
         SendMessage actualMessage;
@@ -407,7 +412,7 @@ public class CreateExerciseTests {
     @MethodSource("requestFieldsIsNull")
     public void createExerciseErrorTest(RequestContainerCreateExerciseRequest request) {
         int data = (int) RandomUtils.generateRandomLong(1, 10);
-        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + getCallback("approachCallback") + data);
+        callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
         CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, request);
 
         var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
@@ -433,21 +438,4 @@ public class CreateExerciseTests {
         );
     }
 
-    @SneakyThrows
-    private InlineKeyboardMarkup buildGrid(String data, String callback, List<String> options) {
-        Class<?> createExerciseComponentClass = createExerciseComponent.getClass();
-        Method privateMethod = createExerciseComponentClass.getDeclaredMethod(
-                "buildGrid", String.class, String.class, List.class
-        );
-        privateMethod.setAccessible(true);
-        return (InlineKeyboardMarkup) privateMethod.invoke(createExerciseComponent, data, callback, options);
-    }
-
-    @SneakyThrows
-    private String getCallback(String fieldName) {
-        Class<?> createExerciseComponentClass = createExerciseComponent.getClass();
-        Field field = createExerciseComponentClass.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return (String) field.get(createExerciseComponent);
-    }
 }

@@ -1,7 +1,6 @@
 package d.shunyaev.RemoteTrainingTgBot.components.services;
 
-import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
-import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetTrainingsSteps;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.model.Exercises;
 import d.shunyaev.model.ResponseContainerResult;
@@ -18,24 +17,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCISE;
-import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_TRAINING;
+import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
 public class GetTrainingsComponent {
 
-    private final ValidateComponent validateComponent;
-    private final GetTrainingsSteps getTrainingsSteps;
+    private final TrainingsSteps getTrainingsSteps;
 
     public GetTrainingsComponent(
-            ValidateComponent validateComponent,
-            GetTrainingsSteps getTrainingsSteps
+            TrainingsSteps getTrainingsSteps
     ) {
-        this.validateComponent = validateComponent;
         this.getTrainingsSteps = getTrainingsSteps;
     }
 
-    public EditMessageText setTrainingIsDone(CallbackQuery callbackQuery, long chatId) {
+    public EditMessageText setTrainingIsDone(CallbackQuery callbackQuery, long chatId, EditMessageText editMessageText) {
+        if (!callbackQuery.getData().contains("getTraining/isDone/")) {
+            return editMessageText;
+        }
         long trainingId = Long.parseLong(
                 callbackQuery.getData().replaceAll("editMessage/getTraining/isDone/", "")
         );
@@ -53,7 +51,7 @@ public class GetTrainingsComponent {
                 .filter(t -> t.getTrainingId().equals(trainingId))
                 .findFirst()
                 .get();
-        EditMessageText editMessageText = createTrainingMessageEdit(training, chatId);
+        editMessageText = createTrainingMessageEdit(training, chatId);
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         if (result.getCode() != 200) {
             editMessageText.setText(
@@ -98,7 +96,7 @@ public class GetTrainingsComponent {
         return responseList;
     }
 
-    private EditMessageText createTrainingMessageEdit(
+    public EditMessageText createTrainingMessageEdit(
             Trainings training,
             long chatId
     ) {
@@ -181,7 +179,6 @@ public class GetTrainingsComponent {
             b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + trainingId);
             keyboard.add(List.of(b));
             markup.setKeyboard(keyboard);
-            return markup;
         } else if (!trainingIsDone) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             InlineKeyboardButton b = new InlineKeyboardButton();
@@ -194,7 +191,7 @@ public class GetTrainingsComponent {
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton b = new InlineKeyboardButton();
         b.setText("Изменить тренировку");
-        b.setCallbackData("updateTraining/%s"
+        b.setCallbackData(UPDATE_TRAINING.getUrl() + "%s"
                 .formatted(trainingId));
         row.add(b);
         keyboard.add(row);

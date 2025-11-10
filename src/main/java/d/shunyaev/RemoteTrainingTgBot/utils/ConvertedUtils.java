@@ -24,6 +24,22 @@ public class ConvertedUtils {
         return day;
     }
 
+    public String convertToRusDayOfWeek(DayOfWeek day) {
+        if (day == null) {
+            throw new IllegalArgumentException("День недели не может быть null");
+        }
+
+        return switch (day) {
+            case MONDAY -> "Понедельник";
+            case TUESDAY -> "Вторник";
+            case WEDNESDAY -> "Среда";
+            case THURSDAY -> "Четверг";
+            case FRIDAY -> "Пятница";
+            case SATURDAY -> "Суббота";
+            case SUNDAY -> "Воскресенье";
+        };
+    }
+
     public String convertMonthToRussian(LocalDate date) {
         String month = date.getMonth().name();
         return switch (month.toUpperCase()) {

@@ -23,6 +23,7 @@ public class TelegramController {
     private final CreateTrainingComponent createTrainingComponent;
     private final CreateExerciseComponent createExerciseComponent;
     private final GetTrainingsComponent getTrainingsComponent;
+    private final UpdateTrainingsComponent updateTrainingsComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
 
     public TelegramController(
@@ -30,13 +31,14 @@ public class TelegramController {
             RegistrationComponent registrationComponent,
             CreateTrainingComponent createTrainingComponent,
             CreateExerciseComponent createExerciseComponent,
-            GetTrainingsComponent getTrainingsComponent
-    ) {
+            GetTrainingsComponent getTrainingsComponent,
+            UpdateTrainingsComponent updateTrainingsComponent) {
         this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
         this.createTrainingComponent = createTrainingComponent;
         this.createExerciseComponent = createExerciseComponent;
         this.getTrainingsComponent = getTrainingsComponent;
+        this.updateTrainingsComponent = updateTrainingsComponent;
     }
 
     public EditMessageText editMessageController(Update update) {
@@ -44,9 +46,13 @@ public class TelegramController {
         Message requestMessage = update.getMessage();
 
         long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
-        EditMessageText editMessageText;
 
-        editMessageText = getTrainingsComponent.setTrainingIsDone(callbackQuery, chatId);
+        EditMessageText editMessageText = new EditMessageText();
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        editMessageText.setChatId(chatId);
+
+        editMessageText = getTrainingsComponent.setTrainingIsDone(callbackQuery, chatId, editMessageText);
+        editMessageText = updateTrainingsComponent.updateTraining(callbackQuery, chatId, editMessageText);
 
         return editMessageText;
     }

@@ -11,6 +11,7 @@ public enum ServicesUrl {
     LAST_NAME("lastName/"),
     CREATE_NEW_TRAINING("createNewTraining/"),
     GENERATE_NEW_TRAINING("generateNewTraining/"),
+    UPDATE_TRAINING("updateTraining/"),
     CREATE_NEW_EXERCISE("createNewExercise/")
     ;
     private final String url;

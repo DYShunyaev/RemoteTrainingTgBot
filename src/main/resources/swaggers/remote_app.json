@@ -47,6 +47,68 @@
         }
       }
     },
+    "/api/update_training": {
+      "post": {
+        "tags": [
+          "training-controller"
+        ],
+        "summary": "Сервис обнавления тренировки",
+        "operationId": "updateTraining",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerUpdateTrainingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/update_exercise": {
+      "post": {
+        "tags": [
+          "exercise-controller"
+        ],
+        "summary": "Сервис обновления упражнения",
+        "operationId": "updateExercise",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerUpdateExerciseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/training_is_done": {
       "post": {
         "tags": [
@@ -498,6 +560,109 @@
           "user_info": {
             "type": "string",
             "description": "Информация о пользователе"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerUpdateTrainingRequest": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "description": "Дата тренировки"
+          },
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "training_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "day_of_week": {
+            "type": "string",
+            "description": "День тренировки",
+            "enum": [
+              "Понедельник",
+              "Вторник",
+              "Среда",
+              "Четверг",
+              "Пятница",
+              "Суббота",
+              "Воскресенье"
+            ]
+          },
+          "muscle_group": {
+            "type": "string",
+            "description": "Группа мышц"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerUpdateExerciseRequest": {
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Количество повторений"
+          },
+          "approach": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Количество подходов"
+          },
+          "weight": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Вес"
+          },
+          "exercise_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "exercise_name": {
+            "type": "string",
+            "description": "Название упражнения"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
           }
         },
         "required": [

@@ -3,19 +3,18 @@ package d.shunyaev.RemoteTrainingTgBot.components.getters_components;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
-import d.shunyaev.model.RequestContainerGetTrainingsRequest;
-import d.shunyaev.model.RequestContainerTrainingIsDoneRequest;
-import d.shunyaev.model.ResponseContainerGetTrainingsResponse;
-import d.shunyaev.model.ResponseContainerResult;
+import d.shunyaev.model.*;
 import org.springframework.stereotype.Component;
 
+import java.util.NoSuchElementException;
+
 @Component
-public class GetTrainingsSteps {
+public class TrainingsSteps {
 
     private final UsersBotRepository usersBotRepository;
     private final RequestContainerGetTrainingsRequest request = new RequestContainerGetTrainingsRequest();
 
-    public GetTrainingsSteps(UsersBotRepository usersBotRepository) {
+    public TrainingsSteps(UsersBotRepository usersBotRepository) {
         this.usersBotRepository = usersBotRepository;
     }
 
@@ -26,6 +25,20 @@ public class GetTrainingsSteps {
                 .dateOfTraining(null)
                 .dayOfWeek(null);
         return RemoteAppController.getTrainingControllerApi().getTrainings(request);
+    }
+
+    public Trainings getTrainingByTrainingId(long chatId, long trainingId) {
+        UsersBot usersBot = usersBotRepository.getUserBotByChatId(chatId);
+        request
+                .userId(usersBot.getUserId())
+                .dateOfTraining(null)
+                .dayOfWeek(null);
+        return RemoteAppController.getTrainingControllerApi().getTrainings(request)
+                .getTrainings()
+                .stream()
+                .filter(training -> training.getTrainingId().equals(trainingId))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException("Не найдено тренировки"));
     }
 
     public ResponseContainerResult setTrainingIsDone(long chatId, long trainingId) {
