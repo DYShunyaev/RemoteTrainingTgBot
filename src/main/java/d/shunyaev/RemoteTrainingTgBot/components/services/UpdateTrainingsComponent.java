@@ -22,7 +22,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCISE;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.UPDATE_TRAINING;
 
 @Component
@@ -49,12 +48,16 @@ public class UpdateTrainingsComponent {
             return updateExercise(data, chatId, editMessageText);
         }
         String[] dataMass = data.split("/");
-        long trainingId = Long.parseLong(
+        Long trainingId = Long.parseLong(
                 Arrays.stream(dataMass)
                         .filter(i -> i.matches("\\d.*"))
                         .findFirst()
-                        .get()
+                        .orElse("-1")
         );
+        trainingId = trainingId >= 0
+                ? trainingId
+                : null;
+
         String newDateTraining = Arrays.stream(dataMass)
                 .filter(i -> i.matches("\\d{4}-\\d{2}-\\d{2}"))
                 .findFirst()
@@ -67,7 +70,10 @@ public class UpdateTrainingsComponent {
             updateTraining(trainingId, editMessageText);
         } else if (data.equals(VariablesChangeTraining.UPDATE_EXERCISES.url)) {
             chooseDeleteOrUpdateExercises(chatId, trainingId, editMessageText, VariablesChangeTraining.UPDATE_EXERCISE);
-        } else if (data.equals(VariablesChangeTraining.DELETE_TRAINING.url)) {
+        } else if (data.equals(VariablesChangeTraining.DELETE_TRAINING.url.formatted(""))
+                && Objects.isNull(trainingId)) {
+            deleteExerciseOrTraining(chatId, editMessageText);
+        } else if (data.equals(VariablesChangeTraining.DELETE_TRAINING.url) && Objects.nonNull(trainingId)) {
             deleteTraining(trainingId, editMessageText);
         } else if (data.equals(VariablesChangeTraining.DELETE_EXERCISES.url)) {
             chooseDeleteOrUpdateExercises(chatId, trainingId, editMessageText, VariablesChangeTraining.DELETE_EXERCISE);
@@ -78,10 +84,34 @@ public class UpdateTrainingsComponent {
         } else if (data.contains("changeDateOfTraining") && Objects.nonNull(newDateTraining)) {
             return updateTraining(newDateTraining, chatId, trainingId, editMessageText);
         } else {
-            chooseVariables(trainingId, editMessageText);
+            chooseVariables(chatId, trainingId, editMessageText);
         }
 
         return editMessageText;
+    }
+
+    private void deleteExerciseOrTraining(long chatId, EditMessageText editMessageText) {
+        long trainingId = trainingsIds.get(chatId);
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        trainingsIds.put(chatId, trainingId);
+
+        for (VariablesChangeTraining var : List.of(
+                VariablesChangeTraining.DELETE_TRAINING,
+                VariablesChangeTraining.DELETE_EXERCISES
+        )) {
+            List<InlineKeyboardButton> row = new ArrayList<>();
+            InlineKeyboardButton b = new InlineKeyboardButton();
+            b.setText(var.getDescription());
+            b.setCallbackData(var.getUrl()
+                    .formatted(trainingId));
+            row.add(b);
+            keyboard.add(row);
+        }
+
+        markup.setKeyboard(keyboard);
+        editMessageText.setText("Выберете подходящее");
+        editMessageText.setReplyMarkup(markup);
     }
 
     private EditMessageText updateExercise(String data, long chatId, EditMessageText editMessageText) {
@@ -238,6 +268,7 @@ public class UpdateTrainingsComponent {
         }
         return editMessageText;
     }
+
     private EditMessageText updateTraining(String newDateTraining, long chatId, long trainingId, EditMessageText editMessageText) {
         LocalDate newDate = LocalDate.parse(newDateTraining, DateTimeFormatter.ISO_DATE);
         DayOfWeekEnum dayOfWeek = Arrays.stream(DayOfWeekEnum.values())
@@ -385,24 +416,40 @@ public class UpdateTrainingsComponent {
         editMessageText.setReplyMarkup(markup);
     }
 
-    private void chooseVariables(long trainingId, EditMessageText editMessageText) {
+    private void chooseVariables(long chatId, long trainingId, EditMessageText editMessageText) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+        trainingsIds.put(chatId, trainingId);
 
-        for (VariablesChangeTraining var : VariablesChangeTraining.values()) {
-            if (var.equals(VariablesChangeTraining.DELETE_EXERCISE)
-                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISES)
-                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISE)) {
-                continue;
-            }
+        for (VariablesChangeTraining var : List.of(
+                VariablesChangeTraining.UPDATE_TRAINING,
+                VariablesChangeTraining.DELETE_TRAINING
+        )) {
             List<InlineKeyboardButton> row = new ArrayList<>();
             InlineKeyboardButton b = new InlineKeyboardButton();
             b.setText(var.getDescription());
             b.setCallbackData(var.getUrl()
-                    .formatted(trainingId));
+                    .formatted(var.equals(VariablesChangeTraining.UPDATE_TRAINING)
+                            ? trainingId
+                            : ""));
             row.add(b);
             keyboard.add(row);
         }
+
+//        for (VariablesChangeTraining var : VariablesChangeTraining.values()) {
+//            if (var.equals(VariablesChangeTraining.DELETE_EXERCISE)
+//                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISES)
+//                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISE)) {
+//                continue;
+//            }
+//            List<InlineKeyboardButton> row = new ArrayList<>();
+//            InlineKeyboardButton b = new InlineKeyboardButton();
+//            b.setText(var.getDescription());
+//            b.setCallbackData(var.getUrl()
+//                    .formatted(trainingId));
+//            row.add(b);
+//            keyboard.add(row);
+//        }
 
         markup.setKeyboard(keyboard);
         editMessageText.setText("Выберете подходящее");

@@ -25,6 +25,7 @@ public class TelegramController {
     private final GetTrainingsComponent getTrainingsComponent;
     private final UpdateTrainingsComponent updateTrainingsComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
+    private final Map<Long, EditMessageText> beforeEditMessages = new HashMap<>();
 
     public TelegramController(
             CreateUserComponent telegramService,
@@ -54,6 +55,7 @@ public class TelegramController {
         editMessageText = getTrainingsComponent.setTrainingIsDone(callbackQuery, chatId, editMessageText);
         editMessageText = updateTrainingsComponent.updateTraining(callbackQuery, chatId, editMessageText);
 
+        beforeEditMessages.put(chatId, editMessageText);
         return editMessageText;
     }
 
