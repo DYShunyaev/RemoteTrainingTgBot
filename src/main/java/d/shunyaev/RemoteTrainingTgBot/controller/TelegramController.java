@@ -1,6 +1,9 @@
 package d.shunyaev.RemoteTrainingTgBot.controller;
 
+import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.services.*;
+import d.shunyaev.RemoteTrainingTgBot.models.MessageCash;
+import jakarta.ws.rs.NotFoundException;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -8,10 +11,8 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
@@ -42,11 +43,23 @@ public class TelegramController {
         this.updateTrainingsComponent = updateTrainingsComponent;
     }
 
+    public EditMessageText backMessage(Update update) {
+        CallbackQuery callbackQuery = update.getCallbackQuery();
+        Message requestMessage = update.getMessage();
+
+        long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+        EditMessageText editMessageText = getLastMessageByChatId(chatId, (Message) callbackQuery.getMessage());
+        editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
+        return editMessageText;
+    }
+
     public EditMessageText editMessageController(Update update) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
         Message requestMessage = update.getMessage();
 
         long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
+
+        setMessageCash(chatId, (Message) callbackQuery.getMessage());
 
         EditMessageText editMessageText = new EditMessageText();
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
@@ -171,4 +184,40 @@ public class TelegramController {
         callbackQuery.setMessage(message);
         return callbackQuery;
     }
+
+    private void setMessageCash(long chatId, EditMessageText editMessageText) {
+        MessageCash messageCash = new MessageCash();
+        messageCash.setChatId(chatId);
+        messageCash.setEditMessageText(editMessageText);
+        messageCash.setLocalDateTime(LocalDateTime.now());
+        CashComponent.MESSAGE_CASH.add(messageCash);
+    }
+
+    private void setMessageCash(long chatId, SendMessage editMessageText) {
+        MessageCash messageCash = new MessageCash();
+        messageCash.setChatId(chatId);
+        messageCash.setEditMessageText(editMessageText);
+        messageCash.setLocalDateTime(LocalDateTime.now());
+        CashComponent.MESSAGE_CASH.add(messageCash);
+    }
+
+    private void setMessageCash(long chatId, Message editMessageText) {
+        MessageCash messageCash = new MessageCash();
+        messageCash.setChatId(chatId);
+        messageCash.setEditMessageText(editMessageText);
+        messageCash.setLocalDateTime(LocalDateTime.now());
+        CashComponent.MESSAGE_CASH.add(messageCash);
+    }
+
+    private EditMessageText getLastMessageByChatId(long chatId, Message actualMessage) {
+        MessageCash messageCash = CashComponent.MESSAGE_CASH.stream()
+                .filter(message -> message.getChatId() == chatId)
+                .filter(message -> !message.getEditMessageText().getReplyMarkup().equals(actualMessage.getReplyMarkup()))
+                .max(Comparator.comparing(MessageCash::getLocalDateTime))
+                .orElseThrow(() -> new NotFoundException("Не найдено сообщение с chatId = %s"
+                        .formatted(chatId)));
+        CashComponent.MESSAGE_CASH.remove(messageCash);
+        return messageCash.getEditMessageText();
+    }
+
 }

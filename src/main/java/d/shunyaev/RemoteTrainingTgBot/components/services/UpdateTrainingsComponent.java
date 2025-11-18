@@ -108,6 +108,7 @@ public class UpdateTrainingsComponent {
             row.add(b);
             keyboard.add(row);
         }
+        keyboard.add(createBackButton());
 
         markup.setKeyboard(keyboard);
         editMessageText.setText("Выберете подходящее");
@@ -236,6 +237,8 @@ public class UpdateTrainingsComponent {
         row.add(four);
         keyboard.add(row);
 
+        keyboard.add(createBackButton());
+
         markup.setKeyboard(keyboard);
         editMessageText.setReplyMarkup(markup);
         return editMessageText;
@@ -318,6 +321,7 @@ public class UpdateTrainingsComponent {
                     .formatted(trainingId, d));
             keyboard.add(List.of(b));
         }
+        keyboard.add(createBackButton());
 
         markup.setKeyboard(keyboard);
         editMessageText.setReplyMarkup(markup);
@@ -366,6 +370,8 @@ public class UpdateTrainingsComponent {
             row.add(b);
             keyboard.add(row);
         }
+        keyboard.add(createBackButton());
+
         markup.setKeyboard(keyboard);
         editMessageText.setText("Выберете подходящее");
         editMessageText.setReplyMarkup(markup);
@@ -411,6 +417,8 @@ public class UpdateTrainingsComponent {
         row.add(second);
         keyboard.add(row);
 
+        keyboard.add(createBackButton());
+
         markup.setKeyboard(keyboard);
         editMessageText.setText("Выберете подходящее");
         editMessageText.setReplyMarkup(markup);
@@ -435,21 +443,7 @@ public class UpdateTrainingsComponent {
             row.add(b);
             keyboard.add(row);
         }
-
-//        for (VariablesChangeTraining var : VariablesChangeTraining.values()) {
-//            if (var.equals(VariablesChangeTraining.DELETE_EXERCISE)
-//                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISES)
-//                    || var.equals(VariablesChangeTraining.UPDATE_EXERCISE)) {
-//                continue;
-//            }
-//            List<InlineKeyboardButton> row = new ArrayList<>();
-//            InlineKeyboardButton b = new InlineKeyboardButton();
-//            b.setText(var.getDescription());
-//            b.setCallbackData(var.getUrl()
-//                    .formatted(trainingId));
-//            row.add(b);
-//            keyboard.add(row);
-//        }
+        keyboard.add(createBackButton());
 
         markup.setKeyboard(keyboard);
         editMessageText.setText("Выберете подходящее");
@@ -469,6 +463,15 @@ public class UpdateTrainingsComponent {
                 .filter(f -> !f.equals(dateTrainingNow))
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    private List<InlineKeyboardButton> createBackButton() {
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton b = new InlineKeyboardButton();
+        b.setText("Назад ⏪");
+        b.setCallbackData("back");
+        row.add(b);
+        return row;
     }
 
     private enum VariablesChangeTraining {

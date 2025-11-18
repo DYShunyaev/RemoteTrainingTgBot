@@ -50,6 +50,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 && update.getCallbackQuery().getData().contains("editMessage")
             || Objects.nonNull(update.getCallbackQuery()) && update.getCallbackQuery().getData().contains("update")) {
             sendMessage(telegramController.editMessageController(update));
+        } else if (update.getCallbackQuery().getData().equals("back")) {
+            sendMessage(telegramController.backMessage(update));
         }
         else {
             sendMessage(telegramController.createController(update));
