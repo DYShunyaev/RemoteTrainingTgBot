@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -60,20 +61,47 @@ public class UpdateTrainingsComponent {
         VariablesChangeTraining dataVariables = VariablesChangeTraining.getByUrl(data);
 
         switch (dataVariables) {
-            case UPDATE_TRAINING -> updateTraining(trainingId, editMessageText);
-            case UPDATE_EXERCISES -> chooseDeleteOrUpdateExercises(chatId, trainingId,
-                    editMessageText, VariablesChangeTraining.UPDATE_EXERCISE);
+            case UPDATE_TRAINING -> updateTraining(
+                    trainingId,
+                    editMessageText
+            );
+            case UPDATE_EXERCISES -> chooseDeleteOrUpdateExercises(
+                    chatId,
+                    trainingId,
+                    editMessageText,
+                    VariablesChangeTraining.UPDATE_EXERCISE
+            );
             case DELETE_TRAINING -> {
                 if (Objects.isNull(trainingId)) {
-                    deleteExerciseOrTraining(chatId, editMessageText);
+                    deleteExerciseOrTraining(
+                            chatId,
+                            editMessageText
+                    );
                 } else {
-                    deleteTraining(trainingId, editMessageText);
+                    deleteTraining(
+                            trainingId,
+                            editMessageText
+                    );
                 }
             }
-            case DELETE_EXERCISES -> chooseDeleteOrUpdateExercises(chatId, trainingId,
-                    editMessageText, VariablesChangeTraining.DELETE_EXERCISE);
-            case DELETE_EXERCISE -> deleteExercise(chatId, trainingId, editMessageText);
-            default -> defaultChange(data, newDateTraining, chatId, trainingId, editMessageText);
+            case DELETE_EXERCISES -> chooseDeleteOrUpdateExercises(
+                    chatId,
+                    trainingId,
+                    editMessageText,
+                    VariablesChangeTraining.DELETE_EXERCISE
+            );
+            case DELETE_EXERCISE -> deleteExercise(
+                    chatId,
+                    trainingId,
+                    editMessageText
+            );
+            default -> defaultChange(
+                    data,
+                    newDateTraining,
+                    chatId,
+                    trainingId,
+                    editMessageText
+            );
         }
 
         return editMessageText;
@@ -83,12 +111,25 @@ public class UpdateTrainingsComponent {
                                Long trainingId, EditMessageText editMessageText) {
         if (data.contains("changeDateOfTraining")) {
             if (Objects.isNull(newDateTraining)) {
-                changeDayOfTraining(chatId, trainingId, editMessageText);
+                changeDayOfTraining(
+                        chatId,
+                        trainingId,
+                        editMessageText
+                );
             } else {
-                updateTraining(newDateTraining, chatId, trainingId, editMessageText);
+                updateTraining(
+                        newDateTraining,
+                        chatId,
+                        trainingId,
+                        editMessageText
+                );
             }
         } else {
-            chooseVariables(chatId, trainingId, editMessageText);
+            chooseVariables(
+                    chatId,
+                    trainingId,
+                    editMessageText
+            );
         }
     }
 
@@ -110,8 +151,8 @@ public class UpdateTrainingsComponent {
             );
         }
         keyboard.add(createBackButton());
-
         markup.setKeyboard(keyboard);
+
         editMessageText.setText("Выберете подходящее");
         editMessageText.setReplyMarkup(markup);
     }
@@ -247,15 +288,11 @@ public class UpdateTrainingsComponent {
         long exerciseId = exerciseIds.get(chatId);
         RequestContainerUpdateExerciseRequest request = CashComponent.UPDATE_EXERCISE_REQUEST.get(chatId)
                 .exerciseId(exerciseId);
+        ResponseContainerResult result = callRemoteTrainingApp(
+                () -> RemoteAppController.getExerciseControllerApi().updateExercise(request)
+        );
 
-        ResponseContainerResult result;
-        try {
-            result = RemoteAppController.getExerciseControllerApi().updateExercise(request);
-        } catch (BadRequestException e) {
-            result = e.getResponseBody();
-        }
-
-        if (result.getCode() == 200) {
+        if (Objects.requireNonNull(result.getCode()).equals(200)) {
             CashComponent.UPDATE_EXERCISE_REQUEST.remove(chatId);
             long trainingId = trainingsIds.get(chatId);
             Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
@@ -285,14 +322,11 @@ public class UpdateTrainingsComponent {
                 .dayOfWeek(dayOfWeek)
                 .trainingId(trainingId);
 
-        ResponseContainerResult result;
-        try {
-            result = RemoteAppController.getTrainingControllerApi().updateTraining(request);
-        } catch (BadRequestException e) {
-            result = e.getResponseBody();
-        }
+        ResponseContainerResult result = callRemoteTrainingApp(
+                () -> RemoteAppController.getTrainingControllerApi().updateTraining(request)
+        );
 
-        if (result.getCode() == 200) {
+        if (Objects.requireNonNull(result.getCode()).equals(200)) {
             Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
             EditMessageText newEditMessage = getTrainingsComponent.createTrainingMessageEdit(training, chatId);
 
@@ -307,7 +341,7 @@ public class UpdateTrainingsComponent {
     private void changeDayOfTraining(long chatId, long trainingId, EditMessageText editMessageText) {
         Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
         List<LocalDate> options = getDaysFromTraining(
-                LocalDate.parse(training.getDate(), DateTimeFormatter.ISO_DATE));
+                LocalDate.parse(Objects.requireNonNull(training.getDate()), DateTimeFormatter.ISO_DATE));
 
         editMessageText.setText("Выберете новый день тренировки:");
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
@@ -329,16 +363,14 @@ public class UpdateTrainingsComponent {
     }
 
     private void deleteExercise(long chatId, long exerciseId, EditMessageText editMessageText) {
-        ResponseContainerResult result;
-        try {
-            result = RemoteAppController.getExerciseControllerApi().deleteExercise(
-                    new RequestContainerDeleteExerciseRequest()
-                            .exerciseId(exerciseId)
-            );
-        } catch (BadRequestException e) {
-            result = e.getResponseBody();
-        }
-        if (result.getCode() == 200) {
+        ResponseContainerResult result = callRemoteTrainingApp(
+                () -> RemoteAppController.getExerciseControllerApi().deleteExercise(
+                        new RequestContainerDeleteExerciseRequest()
+                                .exerciseId(exerciseId)
+                )
+        );
+
+        if (Objects.requireNonNull(result.getCode()).equals(200)) {
             long trainingId = trainingsIds.get(chatId);
             Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
             EditMessageText newEditMessage = getTrainingsComponent.createTrainingMessageEdit(training, chatId);
@@ -379,16 +411,14 @@ public class UpdateTrainingsComponent {
     }
 
     private void deleteTraining(long trainingId, EditMessageText editMessageText) {
-        ResponseContainerResult result;
-        try {
-            result = RemoteAppController.getTrainingControllerApi().deleteTraining(
-                    new RequestContainerDeleteTrainingRequest()
-                            .trainingId(trainingId)
-            );
-        } catch (BadRequestException e) {
-            result = e.getResponseBody();
-        }
-        if (result.getCode() == 200) {
+        ResponseContainerResult result = callRemoteTrainingApp(
+                () -> RemoteAppController.getTrainingControllerApi().deleteTraining(
+                        new RequestContainerDeleteTrainingRequest()
+                                .trainingId(trainingId)
+                )
+        );
+
+        if (Objects.requireNonNull(result.getCode()).equals(200)) {
             editMessageText.setText("Тренировка удалена.");
         } else {
             editMessageText.setText("Ошибка удаления тренировки: %s"
@@ -477,6 +507,14 @@ public class UpdateTrainingsComponent {
         return row;
     }
 
+    private ResponseContainerResult callRemoteTrainingApp(Supplier<ResponseContainerResult> action) {
+        try {
+            return action.get();
+        } catch (BadRequestException e) {
+            return e.getResponseBody();
+        }
+    }
+
     private TrainingIdAndNewDateTraining getTrainingIdAndNewDateTraining(String data) {
         String[] dataMass = data.split("/");
         Long trainingId = Long.parseLong(
@@ -507,13 +545,13 @@ public class UpdateTrainingsComponent {
 
         private final String url;
 
-        public String getDescription() {
+        private String getDescription() {
             return description;
         }
 
         private final String description;
 
-        public String getUrl() {
+        private String getUrl() {
             return ServicesUrl.UPDATE_TRAINING.getUrl() + this.url;
         }
 
@@ -522,7 +560,7 @@ public class UpdateTrainingsComponent {
             this.description = description;
         }
 
-        public static VariablesChangeTraining getByUrl(@NotNull String url) {
+        private static VariablesChangeTraining getByUrl(@NotNull String url) {
             return Arrays.stream(VariablesChangeTraining.values())
                     .filter(var -> var.url.equals(url))
                     .findFirst()
