@@ -100,13 +100,12 @@ public class UpdateTrainingsComponent {
                 VariablesChangeTraining.DELETE_TRAINING,
                 VariablesChangeTraining.DELETE_EXERCISES
         )) {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(var.getDescription());
-            b.setCallbackData(var.getUrl()
-                    .formatted(trainingId));
-            row.add(b);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            var.getDescription(),
+                            var.getUrl().formatted(trainingId)
+                    )
+            );
         }
         keyboard.add(createBackButton());
 
@@ -198,44 +197,41 @@ public class UpdateTrainingsComponent {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-
-        List<InlineKeyboardButton> row;
-
         if (Objects.isNull(request.getWeight())) {
-            row = new ArrayList<>();
-            InlineKeyboardButton first = new InlineKeyboardButton();
-            first.setText("Изменить вес");
-            first.setCallbackData(VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
-                    .formatted("choose/" + buildGridComponent.weightCallback) + exerciseId);
-            row.add(first);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            "Изменить вес",
+                            VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
+                                    .formatted("choose/" + buildGridComponent.weightCallback) + exerciseId
+                    )
+            );
         }
         if (Objects.isNull(request.getQuantity())) {
-            row = new ArrayList<>();
-            InlineKeyboardButton second = new InlineKeyboardButton();
-            second.setText("Изменить количество повторений");
-            second.setCallbackData(VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
-                    .formatted("choose/" + buildGridComponent.quantityCallback) + exerciseId);
-            row.add(second);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            "Изменить количество повторений",
+                            VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
+                                    .formatted("choose/" + buildGridComponent.quantityCallback) + exerciseId
+                    )
+            );
         }
         if (Objects.isNull(request.getApproach())) {
-            row = new ArrayList<>();
-            InlineKeyboardButton third = new InlineKeyboardButton();
-            third.setText("Изменить количество подходов");
-            third.setCallbackData(VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
-                    .formatted("choose/" + buildGridComponent.approachCallback) + exerciseId);
-            row.add(third);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            "Изменить количество подходов",
+                            VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
+                                    .formatted("choose/" + buildGridComponent.approachCallback) + exerciseId
+                    )
+            );
         }
 
-        row = new ArrayList<>();
-        InlineKeyboardButton four = new InlineKeyboardButton();
-        four.setText("Завершить");
-        four.setCallbackData(VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
-                .formatted("choose/done/") + exerciseId);
-        row.add(four);
-        keyboard.add(row);
+        keyboard.add(
+                createButton(
+                        "Завершить",
+                        VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
+                                .formatted("choose/done/") + exerciseId
+                )
+        );
 
         keyboard.add(createBackButton());
 
@@ -315,11 +311,13 @@ public class UpdateTrainingsComponent {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (LocalDate d : options) {
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d));
-            b.setCallbackData(UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s/%s"
-                    .formatted(trainingId, d));
-            keyboard.add(List.of(b));
+            keyboard.add(
+                    createButton(
+                            d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d),
+                            UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s/%s"
+                                    .formatted(trainingId, d)
+                    )
+            );
         }
         keyboard.add(createBackButton());
 
@@ -354,21 +352,20 @@ public class UpdateTrainingsComponent {
     private void chooseDeleteOrUpdateExercises(long chatId, long trainingId,
                                                EditMessageText editMessageText,
                                                VariablesChangeTraining variablesChangeTraining) {
-        List<Exercises> exercises = trainingsSteps.getTrainingByTrainingId(chatId, trainingId)
-                .getExercises();
+        List<Exercises> exercises = Objects.requireNonNull(trainingsSteps.getTrainingByTrainingId(chatId, trainingId)
+                .getExercises());
 
         trainingsIds.put(chatId, trainingId);
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (Exercises exercise : exercises) {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(exercise.getExerciseName());
-            b.setCallbackData(variablesChangeTraining.getUrl()
-                    .formatted(exercise.getExerciseId()));
-            row.add(b);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            exercise.getExerciseName(),
+                            variablesChangeTraining.getUrl().formatted(exercise.getExerciseId())
+                    )
+            );
         }
         keyboard.add(createBackButton());
 
@@ -400,22 +397,22 @@ public class UpdateTrainingsComponent {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton first = new InlineKeyboardButton();
-        first.setText("Изменить дату тренировки");
-        first.setCallbackData(UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s"
-                .formatted(trainingId));
-        row.add(first);
-        keyboard.add(row);
+        keyboard.add(
+                createButton(
+                        "Изменить дату тренировки",
+                        UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s"
+                                .formatted(trainingId)
+                )
+        );
 
-        row = new ArrayList<>();
-        InlineKeyboardButton second = new InlineKeyboardButton();
         VariablesChangeTraining var = VariablesChangeTraining.UPDATE_EXERCISES;
-        second.setText(var.getDescription());
-        second.setCallbackData(var.getUrl()
-                .formatted(trainingId));
-        row.add(second);
-        keyboard.add(row);
+        keyboard.add(
+                createButton(
+                        var.getDescription(),
+                        var.getUrl()
+                                .formatted(trainingId)
+                )
+        );
 
         keyboard.add(createBackButton());
 
@@ -433,15 +430,16 @@ public class UpdateTrainingsComponent {
                 VariablesChangeTraining.UPDATE_TRAINING,
                 VariablesChangeTraining.DELETE_TRAINING
         )) {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(var.getDescription());
-            b.setCallbackData(var.getUrl()
-                    .formatted(var.equals(VariablesChangeTraining.UPDATE_TRAINING)
-                            ? trainingId
-                            : ""));
-            row.add(b);
-            keyboard.add(row);
+            keyboard.add(
+                    createButton(
+                            var.getDescription(),
+                            var.getUrl().formatted(
+                                    var.equals(VariablesChangeTraining.UPDATE_TRAINING)
+                                            ? trainingId
+                                            : ""
+                            )
+                    )
+            );
         }
         keyboard.add(createBackButton());
 
@@ -466,10 +464,14 @@ public class UpdateTrainingsComponent {
     }
 
     private List<InlineKeyboardButton> createBackButton() {
+        return createButton("Назад ⏪", "back");
+    }
+
+    private List<InlineKeyboardButton> createButton(String description, String callbackData) {
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton b = new InlineKeyboardButton();
-        b.setText("Назад ⏪");
-        b.setCallbackData("back");
+        b.setText(description);
+        b.setCallbackData(callbackData);
         row.add(b);
         return row;
     }
