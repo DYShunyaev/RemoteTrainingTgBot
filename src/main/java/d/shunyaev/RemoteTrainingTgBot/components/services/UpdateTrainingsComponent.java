@@ -9,6 +9,7 @@ import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
 import d.shunyaev.RemoteTrainingTgBot.utils.ConvertedUtils;
 import d.shunyaev.model.*;
 import d.shunyaev.model.RequestContainerUpdateTrainingRequest.DayOfWeekEnum;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -47,47 +48,48 @@ public class UpdateTrainingsComponent {
         if (data.contains("updateExercise") && !data.contains("updateExercises")) {
             return updateExercise(data, chatId, editMessageText);
         }
-        String[] dataMass = data.split("/");
-        Long trainingId = Long.parseLong(
-                Arrays.stream(dataMass)
-                        .filter(i -> i.matches("\\d.*"))
-                        .findFirst()
-                        .orElse("-1")
-        );
-        trainingId = trainingId >= 0
-                ? trainingId
-                : null;
 
-        String newDateTraining = Arrays.stream(dataMass)
-                .filter(i -> i.matches("\\d{4}-\\d{2}-\\d{2}"))
-                .findFirst()
-                .orElse(null);
+        TrainingIdAndNewDateTraining trainingIdAndNewDateTraining = getTrainingIdAndNewDateTraining(data);
+        Long trainingId = trainingIdAndNewDateTraining.trainingId;
+        String newDateTraining = trainingIdAndNewDateTraining.newDataTraining;
+
         data = data
                 .replaceAll(UPDATE_TRAINING.getUrl(), "")
                 .replaceAll("\\d.*", "%s");
 
-        if (data.equals(VariablesChangeTraining.UPDATE_TRAINING.url)) {
-            updateTraining(trainingId, editMessageText);
-        } else if (data.equals(VariablesChangeTraining.UPDATE_EXERCISES.url)) {
-            chooseDeleteOrUpdateExercises(chatId, trainingId, editMessageText, VariablesChangeTraining.UPDATE_EXERCISE);
-        } else if (data.equals(VariablesChangeTraining.DELETE_TRAINING.url.formatted(""))
-                && Objects.isNull(trainingId)) {
-            deleteExerciseOrTraining(chatId, editMessageText);
-        } else if (data.equals(VariablesChangeTraining.DELETE_TRAINING.url) && Objects.nonNull(trainingId)) {
-            deleteTraining(trainingId, editMessageText);
-        } else if (data.equals(VariablesChangeTraining.DELETE_EXERCISES.url)) {
-            chooseDeleteOrUpdateExercises(chatId, trainingId, editMessageText, VariablesChangeTraining.DELETE_EXERCISE);
-        } else if (data.equals(VariablesChangeTraining.DELETE_EXERCISE.url)) {
-            return deleteExercise(chatId, trainingId, editMessageText);
-        } else if (data.contains("changeDateOfTraining") && Objects.isNull(newDateTraining)) {
-            changeDayOfTraining(chatId, trainingId, editMessageText);
-        } else if (data.contains("changeDateOfTraining") && Objects.nonNull(newDateTraining)) {
-            return updateTraining(newDateTraining, chatId, trainingId, editMessageText);
-        } else {
-            chooseVariables(chatId, trainingId, editMessageText);
+        VariablesChangeTraining dataVariables = VariablesChangeTraining.getByUrl(data);
+
+        switch (dataVariables) {
+            case UPDATE_TRAINING -> updateTraining(trainingId, editMessageText);
+            case UPDATE_EXERCISES -> chooseDeleteOrUpdateExercises(chatId, trainingId,
+                    editMessageText, VariablesChangeTraining.UPDATE_EXERCISE);
+            case DELETE_TRAINING -> {
+                if (Objects.isNull(trainingId)) {
+                    deleteExerciseOrTraining(chatId, editMessageText);
+                } else {
+                    deleteTraining(trainingId, editMessageText);
+                }
+            }
+            case DELETE_EXERCISES -> chooseDeleteOrUpdateExercises(chatId, trainingId,
+                    editMessageText, VariablesChangeTraining.DELETE_EXERCISE);
+            case DELETE_EXERCISE -> deleteExercise(chatId, trainingId, editMessageText);
+            default -> defaultChange(data, newDateTraining, chatId, trainingId, editMessageText);
         }
 
         return editMessageText;
+    }
+
+    private void defaultChange(String data, String newDateTraining, long chatId,
+                               Long trainingId, EditMessageText editMessageText) {
+        if (data.contains("changeDateOfTraining")) {
+            if (Objects.isNull(newDateTraining)) {
+                changeDayOfTraining(chatId, trainingId, editMessageText);
+            } else {
+                updateTraining(newDateTraining, chatId, trainingId, editMessageText);
+            }
+        } else {
+            chooseVariables(chatId, trainingId, editMessageText);
+        }
     }
 
     private void deleteExerciseOrTraining(long chatId, EditMessageText editMessageText) {
@@ -127,10 +129,11 @@ public class UpdateTrainingsComponent {
         }
         data = data.contains("choose")
                 ? data
-                .replaceAll(url, "")
-                .replaceAll("choose/", "")
-                .replaceAll("\\d*", "")
-                : data.replaceAll(url, "");
+                    .replaceAll(url, "")
+                    .replaceAll("choose/", "")
+                    .replaceAll("\\d*", "")
+                : data
+                    .replaceAll(url, "");
 
         EditMessageText variable = setParamsInUpdateExerciseRequest(data, chatId, editMessageText);
         if (Objects.nonNull(variable)) {
@@ -268,7 +271,7 @@ public class UpdateTrainingsComponent {
         return editMessageText;
     }
 
-    private EditMessageText updateTraining(String newDateTraining, long chatId, long trainingId, EditMessageText editMessageText) {
+    private void updateTraining(String newDateTraining, long chatId, long trainingId, EditMessageText editMessageText) {
         LocalDate newDate = LocalDate.parse(newDateTraining, DateTimeFormatter.ISO_DATE);
         DayOfWeekEnum dayOfWeek = Arrays.stream(DayOfWeekEnum.values())
                 .filter(day -> day.getValue().equals(
@@ -292,13 +295,13 @@ public class UpdateTrainingsComponent {
         if (result.getCode() == 200) {
             Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
             EditMessageText newEditMessage = getTrainingsComponent.createTrainingMessageEdit(training, chatId);
-            newEditMessage.setMessageId(editMessageText.getMessageId());
-            return newEditMessage;
+
+            editMessageText.setReplyMarkup(newEditMessage.getReplyMarkup());
+            editMessageText.setText(newEditMessage.getText());
         } else {
             editMessageText.setText("Ошибка обновления данных: %s"
                     .formatted(result.getMessage()));
         }
-        return editMessageText;
     }
 
     private void changeDayOfTraining(long chatId, long trainingId, EditMessageText editMessageText) {
@@ -325,7 +328,7 @@ public class UpdateTrainingsComponent {
         editMessageText.setReplyMarkup(markup);
     }
 
-    private EditMessageText deleteExercise(long chatId, long exerciseId, EditMessageText editMessageText) {
+    private void deleteExercise(long chatId, long exerciseId, EditMessageText editMessageText) {
         ResponseContainerResult result;
         try {
             result = RemoteAppController.getExerciseControllerApi().deleteExercise(
@@ -339,14 +342,15 @@ public class UpdateTrainingsComponent {
             long trainingId = trainingsIds.get(chatId);
             Trainings training = trainingsSteps.getTrainingByTrainingId(chatId, trainingId);
             EditMessageText newEditMessage = getTrainingsComponent.createTrainingMessageEdit(training, chatId);
-            newEditMessage.setMessageId(editMessageText.getMessageId());
+
+            editMessageText.setText(newEditMessage.getText());
+            editMessageText.setReplyMarkup(newEditMessage.getReplyMarkup());
+
             trainingsIds.remove(chatId);
-            return newEditMessage;
         } else {
             editMessageText.setText("Ошибка удаления упражнения: %s"
                     .formatted(result.getMessage()));
         }
-        return editMessageText;
     }
 
     private void chooseDeleteOrUpdateExercises(long chatId, long trainingId,
@@ -386,7 +390,6 @@ public class UpdateTrainingsComponent {
         }
         if (result.getCode() == 200) {
             editMessageText.setText("Тренировка удалена.");
-            return;
         } else {
             editMessageText.setText("Ошибка удаления тренировки: %s"
                     .formatted(result.getMessage()));
@@ -433,11 +436,9 @@ public class UpdateTrainingsComponent {
             keyboard.add(
                     createButton(
                             var.getDescription(),
-                            var.getUrl().formatted(
-                                    var.equals(VariablesChangeTraining.UPDATE_TRAINING)
-                                            ? trainingId
-                                            : ""
-                            )
+                            var.equals(VariablesChangeTraining.UPDATE_TRAINING)
+                                    ? var.getUrl().formatted(trainingId)
+                                    : var.getUrl()
                     )
             );
         }
@@ -476,6 +477,25 @@ public class UpdateTrainingsComponent {
         return row;
     }
 
+    private TrainingIdAndNewDateTraining getTrainingIdAndNewDateTraining(String data) {
+        String[] dataMass = data.split("/");
+        Long trainingId = Long.parseLong(
+                Arrays.stream(dataMass)
+                        .filter(i -> i.matches("\\d.*"))
+                        .findFirst()
+                        .orElse("-1")
+        );
+        trainingId = trainingId >= 0
+                ? trainingId
+                : null;
+
+        String newDateTraining = Arrays.stream(dataMass)
+                .filter(i -> i.matches("\\d{4}-\\d{2}-\\d{2}"))
+                .findFirst()
+                .orElse(null);
+        return new TrainingIdAndNewDateTraining(trainingId, newDateTraining);
+    }
+
     private enum VariablesChangeTraining {
         UPDATE_TRAINING("updateTrainings/%s", "Изменить тренировку"),
         UPDATE_EXERCISES("updateExercises/%s", "Изменить упражнения"),
@@ -483,8 +503,7 @@ public class UpdateTrainingsComponent {
         DELETE_TRAINING("deleteTraining/%s", "Удалить тренировку"),
         DELETE_EXERCISES("deleteExercises/%s", "Удалить упражнения"),
         DELETE_EXERCISE("deleteExercise/%s", "Удалить упражнения"),
-
-        ;
+        NON("", "");
 
         private final String url;
 
@@ -502,5 +521,15 @@ public class UpdateTrainingsComponent {
             this.url = url;
             this.description = description;
         }
+
+        public static VariablesChangeTraining getByUrl(@NotNull String url) {
+            return Arrays.stream(VariablesChangeTraining.values())
+                    .filter(var -> var.url.equals(url))
+                    .findFirst()
+                    .orElse(NON);
+        }
+    }
+
+    private record TrainingIdAndNewDateTraining(Long trainingId, String newDataTraining) {
     }
 }
