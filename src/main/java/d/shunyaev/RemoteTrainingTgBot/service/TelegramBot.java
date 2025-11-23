@@ -32,8 +32,10 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         listOfCommands.add(new BotCommand("/start", "Начать работу"));
         listOfCommands.add(new BotCommand("/create_new_training", "Создать новую тренировку"));
-        listOfCommands.add(new BotCommand("/get_my_trainings", "Мои тренировки"));
         listOfCommands.add(new BotCommand("/set_my_trainer", "Добавить треенера"));
+        listOfCommands.add(new BotCommand("/get_my_trainings", "Мои тренировки"));
+        listOfCommands.add(new BotCommand("/get_my_trainer", "Мой тренер"));
+
 
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));

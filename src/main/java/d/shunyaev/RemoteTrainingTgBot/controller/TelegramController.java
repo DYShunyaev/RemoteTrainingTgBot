@@ -25,6 +25,7 @@ public class TelegramController {
     private final CreateExerciseComponent createExerciseComponent;
     private final GetTrainingsComponent getTrainingsComponent;
     private final UpdateTrainingsComponent updateTrainingsComponent;
+    private final TrainerComponent trainerComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private final Map<Long, EditMessageText> beforeEditMessages = new HashMap<>();
 
@@ -34,13 +35,16 @@ public class TelegramController {
             CreateTrainingComponent createTrainingComponent,
             CreateExerciseComponent createExerciseComponent,
             GetTrainingsComponent getTrainingsComponent,
-            UpdateTrainingsComponent updateTrainingsComponent) {
+            UpdateTrainingsComponent updateTrainingsComponent,
+            TrainerComponent trainerComponent
+    ) {
         this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
         this.createTrainingComponent = createTrainingComponent;
         this.createExerciseComponent = createExerciseComponent;
         this.getTrainingsComponent = getTrainingsComponent;
         this.updateTrainingsComponent = updateTrainingsComponent;
+        this.trainerComponent = trainerComponent;
     }
 
     public EditMessageText backMessage(Update update) {
@@ -95,6 +99,7 @@ public class TelegramController {
         responseMessage = createUserController(callbackQuery, requestMessage, chatId, responseMessage);
         responseMessage = createTrainingController(callbackQuery, requestMessage, chatId, responseMessage);
         responseMessage = createExerciseController(callbackQuery, chatId, responseMessage);
+        responseMessage = setMyTrainerController(responseMessage, update.getMessage(), chatId);
 
         beforeMessages.put(chatId, responseMessage);
         return responseMessage;
@@ -175,6 +180,16 @@ public class TelegramController {
         if (data.contains("done")) return responseMessage;
         if ("createNewExercise".equals(textCommand)) {
             return createExerciseComponent.createExercise(callbackQuery, chatId);
+        }
+        return responseMessage;
+    }
+
+    private SendMessage setMyTrainerController(SendMessage responseMessage, Message message, long chatId) {
+        if (Objects.nonNull(message) && message.getText().equals("/set_my_trainer")) {
+            return trainerComponent.setTrainer(responseMessage, chatId);
+        } else if (Objects.nonNull(beforeMessages.get(chatId)) &&
+                beforeMessages.get(chatId).getText().contains("Введите user_name")) {
+            return trainerComponent.setTrainer(responseMessage, message, chatId);
         }
         return responseMessage;
     }
