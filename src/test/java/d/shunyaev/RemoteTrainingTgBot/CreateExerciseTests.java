@@ -427,6 +427,7 @@ public class CreateExerciseTests {
 
         InlineKeyboardButton add = new InlineKeyboardButton();
         add.setText("Добавить упражнение");
+        add.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
         keyboard.add(List.of(add));
 
         markup.setKeyboard(keyboard);

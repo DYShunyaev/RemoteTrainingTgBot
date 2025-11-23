@@ -3,10 +3,11 @@ package d.shunyaev.RemoteTrainingTgBot.components.services;
 import d.shunyaev.RemoteTrainingTgBot.components.BuildGridComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
-import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.ConvertedUtils;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.*;
 import d.shunyaev.model.RequestContainerUpdateTrainingRequest.DayOfWeekEnum;
 import jakarta.validation.constraints.NotNull;
@@ -20,7 +21,6 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -144,7 +144,7 @@ public class UpdateTrainingsComponent {
                 VariablesChangeTraining.DELETE_EXERCISES
         )) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             var.getDescription(),
                             var.getUrl().formatted(trainingId)
                     )
@@ -243,7 +243,7 @@ public class UpdateTrainingsComponent {
 
         if (Objects.isNull(request.getWeight())) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             "Изменить вес",
                             VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
                                     .formatted("choose/" + buildGridComponent.weightCallback) + exerciseId
@@ -252,7 +252,7 @@ public class UpdateTrainingsComponent {
         }
         if (Objects.isNull(request.getQuantity())) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             "Изменить количество повторений",
                             VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
                                     .formatted("choose/" + buildGridComponent.quantityCallback) + exerciseId
@@ -261,7 +261,7 @@ public class UpdateTrainingsComponent {
         }
         if (Objects.isNull(request.getApproach())) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             "Изменить количество подходов",
                             VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
                                     .formatted("choose/" + buildGridComponent.approachCallback) + exerciseId
@@ -270,7 +270,7 @@ public class UpdateTrainingsComponent {
         }
 
         keyboard.add(
-                createButton(
+                CreateButtonHelper.createButtonList(
                         "Завершить",
                         VariablesChangeTraining.UPDATE_EXERCISE.getUrl()
                                 .formatted("choose/done/") + exerciseId
@@ -288,7 +288,7 @@ public class UpdateTrainingsComponent {
         long exerciseId = exerciseIds.get(chatId);
         RequestContainerUpdateExerciseRequest request = CashComponent.UPDATE_EXERCISE_REQUEST.get(chatId)
                 .exerciseId(exerciseId);
-        ResponseContainerResult result = callRemoteTrainingApp(
+        ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
                 () -> RemoteAppController.getExerciseControllerApi().updateExercise(request)
         );
 
@@ -322,7 +322,7 @@ public class UpdateTrainingsComponent {
                 .dayOfWeek(dayOfWeek)
                 .trainingId(trainingId);
 
-        ResponseContainerResult result = callRemoteTrainingApp(
+        ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
                 () -> RemoteAppController.getTrainingControllerApi().updateTraining(request)
         );
 
@@ -349,7 +349,7 @@ public class UpdateTrainingsComponent {
 
         for (LocalDate d : options) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d),
                             UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s/%s"
                                     .formatted(trainingId, d)
@@ -363,7 +363,7 @@ public class UpdateTrainingsComponent {
     }
 
     private void deleteExercise(long chatId, long exerciseId, EditMessageText editMessageText) {
-        ResponseContainerResult result = callRemoteTrainingApp(
+        ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
                 () -> RemoteAppController.getExerciseControllerApi().deleteExercise(
                         new RequestContainerDeleteExerciseRequest()
                                 .exerciseId(exerciseId)
@@ -397,7 +397,7 @@ public class UpdateTrainingsComponent {
 
         for (Exercises exercise : exercises) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             exercise.getExerciseName(),
                             variablesChangeTraining.getUrl().formatted(exercise.getExerciseId())
                     )
@@ -411,7 +411,7 @@ public class UpdateTrainingsComponent {
     }
 
     private void deleteTraining(long trainingId, EditMessageText editMessageText) {
-        ResponseContainerResult result = callRemoteTrainingApp(
+        ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
                 () -> RemoteAppController.getTrainingControllerApi().deleteTraining(
                         new RequestContainerDeleteTrainingRequest()
                                 .trainingId(trainingId)
@@ -431,7 +431,7 @@ public class UpdateTrainingsComponent {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         keyboard.add(
-                createButton(
+                CreateButtonHelper.createButtonList(
                         "Изменить дату тренировки",
                         UPDATE_TRAINING.getUrl() + "changeDateOfTraining/%s"
                                 .formatted(trainingId)
@@ -440,7 +440,7 @@ public class UpdateTrainingsComponent {
 
         VariablesChangeTraining var = VariablesChangeTraining.UPDATE_EXERCISES;
         keyboard.add(
-                createButton(
+                CreateButtonHelper.createButtonList(
                         var.getDescription(),
                         var.getUrl()
                                 .formatted(trainingId)
@@ -464,7 +464,7 @@ public class UpdateTrainingsComponent {
                 VariablesChangeTraining.DELETE_TRAINING
         )) {
             keyboard.add(
-                    createButton(
+                    CreateButtonHelper.createButtonList(
                             var.getDescription(),
                             var.equals(VariablesChangeTraining.UPDATE_TRAINING)
                                     ? var.getUrl().formatted(trainingId)
@@ -495,24 +495,7 @@ public class UpdateTrainingsComponent {
     }
 
     private List<InlineKeyboardButton> createBackButton() {
-        return createButton("Назад ⏪", "back");
-    }
-
-    private List<InlineKeyboardButton> createButton(String description, String callbackData) {
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton b = new InlineKeyboardButton();
-        b.setText(description);
-        b.setCallbackData(callbackData);
-        row.add(b);
-        return row;
-    }
-
-    private ResponseContainerResult callRemoteTrainingApp(Supplier<ResponseContainerResult> action) {
-        try {
-            return action.get();
-        } catch (BadRequestException e) {
-            return e.getResponseBody();
-        }
+        return CreateButtonHelper.createButtonList("Назад ⏪", "back");
     }
 
     private TrainingIdAndNewDateTraining getTrainingIdAndNewDateTraining(String data) {

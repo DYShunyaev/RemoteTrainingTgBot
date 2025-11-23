@@ -1,7 +1,8 @@
 package d.shunyaev.RemoteTrainingTgBot.components.services;
 
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
-import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.Exercises;
 import d.shunyaev.model.ResponseContainerResult;
 import d.shunyaev.model.Trainings;
@@ -38,12 +39,8 @@ public class GetTrainingsComponent {
                 callbackQuery.getData().replaceAll("editMessage/getTraining/isDone/", "")
         );
 
-        ResponseContainerResult result;
-        try {
-            result = getTrainingsSteps.setTrainingIsDone(chatId, trainingId);
-        } catch (BadRequestException e) {
-            result = e.getResponseBody();
-        }
+        ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
+                () -> getTrainingsSteps.setTrainingIsDone(chatId, trainingId));
 
         Trainings training = getTrainingsSteps.getTrainingsByChatId(chatId)
                 .getTrainings()
@@ -76,15 +73,12 @@ public class GetTrainingsComponent {
             responseMessage.setChatId(chatId);
 
             responseMessage.setText("У вас нет тренировок");
-
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText("Добавить первое упражнение ");
-            b.setCallbackData(CREATE_NEW_TRAINING.getUrl());
-            keyboard.add(List.of(b));
-            markup.setKeyboard(keyboard);
-            responseMessage.setReplyMarkup(markup);
+            responseMessage.setReplyMarkup(
+                    CreateButtonHelper.addMarkupButton(
+                            "Добавить первое упражнение ",
+                            CREATE_NEW_TRAINING.getUrl()
+                    )
+            );
 
             return List.of(responseMessage);
         }
@@ -174,27 +168,29 @@ public class GetTrainingsComponent {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         if (Objects.isNull(exercisesList) || exercisesList.isEmpty()) {
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText("Добавить первое упражнение ");
-            b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + trainingId);
-            keyboard.add(List.of(b));
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            "Добавить первое упражнение ",
+                            CREATE_NEW_EXERCISE.getUrl() + trainingId
+                    )
+            );
             markup.setKeyboard(keyboard);
         } else if (!trainingIsDone) {
-            List<InlineKeyboardButton> row = new ArrayList<>();
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText("✅ Тренировка выполнена");
-            b.setCallbackData("editMessage/getTraining/isDone/%s"
-                    .formatted(trainingId));
-            row.add(b);
-            keyboard.add(row);
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            "✅ Тренировка выполнена",
+                            "editMessage/getTraining/isDone/%s"
+                                    .formatted(trainingId)
+                    )
+            );
         }
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton b = new InlineKeyboardButton();
-        b.setText("Изменить тренировку");
-        b.setCallbackData(UPDATE_TRAINING.getUrl() + "%s"
-                .formatted(trainingId));
-        row.add(b);
-        keyboard.add(row);
+        keyboard.add(
+                CreateButtonHelper.createButtonList(
+                        "Изменить тренировку",
+                        UPDATE_TRAINING.getUrl() + "%s"
+                                .formatted(trainingId)
+                )
+        );
         markup.setKeyboard(keyboard);
 
         return markup;

@@ -75,6 +75,18 @@ public class UsersBotRepository extends BaseRepository{
         }
     }
 
+    public UsersBot getUserBotByUserName(String userName) {
+        String sql = """
+                select * from users_bot
+                where user_name = ?
+                """;
+        try {
+            return jdbcTemplate.queryForObject(sql, mapToRowToUser(), userName);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
     private RowMapper<UsersBot> mapToRowToUser() {
         return ((rs, rowNum) -> new UsersBot()
                 .setId(rs.getLong("id"))

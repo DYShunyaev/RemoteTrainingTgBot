@@ -33,6 +33,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         listOfCommands.add(new BotCommand("/start", "Начать работу"));
         listOfCommands.add(new BotCommand("/create_new_training", "Создать новую тренировку"));
         listOfCommands.add(new BotCommand("/get_my_trainings", "Мои тренировки"));
+        listOfCommands.add(new BotCommand("/set_my_trainer", "Добавить треенера"));
 
         try {
             this.execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
@@ -46,10 +47,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (Objects.nonNull(update.getMessage()) && update.getMessage().hasText()
                 && update.getMessage().getText().contains("get")) {
             sendMessages(telegramController.getController(update));
-        } else if (Objects.nonNull(update.getCallbackQuery()) && Objects.nonNull(update.getCallbackQuery().getData())) {
+        } else if (Objects.nonNull(update.getCallbackQuery()) && Objects.nonNull(update.getCallbackQuery().getData())
+                && !update.getCallbackQuery().getData().contains("create")) {
             if (update.getCallbackQuery().getData().contains("editMessage") || update.getCallbackQuery().getData().contains("update")) {
                 sendMessage(telegramController.editMessageController(update));
-            } else if (update.getCallbackQuery().getData().equals("back")){
+            } else if (update.getCallbackQuery().getData().equals("back")) {
                 sendMessage(telegramController.backMessage(update));
             }
         } else {

@@ -4,6 +4,7 @@ import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
 import d.shunyaev.RemoteTrainingTgBot.models.UsersBot;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.FileHelper;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import lombok.NonNull;
@@ -12,11 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.User;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_USER;
 
@@ -69,19 +65,15 @@ public class RegistrationComponent {
 
     public SendMessage addRegistrationButton(@NonNull SendMessage responseMessage, long chatId) {
         String helloText = FileHelper.readFileAsString("helloMessage.txt");
+
         responseMessage.setChatId(chatId);
         responseMessage.setText(helloText);
-
-        InlineKeyboardMarkup markupInLine = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        InlineKeyboardButton button = new InlineKeyboardButton();
-        button.setText("РЕГИСТРАЦИЯ");
-        button.setCallbackData(CREATE_USER.getUrl());
-
-        keyboard.add(List.of(button));
-
-        markupInLine.setKeyboard(keyboard);
-        responseMessage.setReplyMarkup(markupInLine);
+        responseMessage.setReplyMarkup(
+                CreateButtonHelper.addMarkupButton(
+                        "РЕГИСТРАЦИЯ",
+                        CREATE_USER.getUrl()
+                )
+        );
         CashComponent.CREATE_USER_REQUESTS.put(chatId, new RequestContainerCreateUserRequest());
         return responseMessage;
     }

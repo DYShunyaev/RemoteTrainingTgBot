@@ -4,11 +4,12 @@ import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.ValidateComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoComponent;
-import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.MuscleGroup;
 import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.ConvertedUtils;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerCreateTrainingRequest;
 import d.shunyaev.model.RequestContainerCreateTrainingRequest.DayOfWeekEnum;
 import d.shunyaev.model.RequestContainerGenerateTrainingRequest;
@@ -65,15 +66,19 @@ public class CreateTrainingComponent {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-        InlineKeyboardButton first = new InlineKeyboardButton();
-        first.setText("Добавить тренировку самостоятельно");
-        first.setCallbackData(CREATE_NEW_TRAINING.getUrl());
-        keyboard.add(List.of(first));
+        keyboard.add(
+                CreateButtonHelper.createButtonList(
+                        "Добавить тренировку самостоятельно",
+                        CREATE_NEW_TRAINING.getUrl()
+                )
+        );
 
-        InlineKeyboardButton second = new InlineKeyboardButton();
-        second.setText("Сгенерировать тренировку");
-        second.setCallbackData(GENERATE_NEW_TRAINING.getUrl());
-        keyboard.add(List.of(second));
+        keyboard.add(
+                CreateButtonHelper.createButtonList(
+                        "Сгенерировать тренировку",
+                        GENERATE_NEW_TRAINING.getUrl()
+                )
+        );
 
         markup.setKeyboard(keyboard);
         responseMessage.setReplyMarkup(markup);
@@ -196,10 +201,12 @@ public class CreateTrainingComponent {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (LocalDate d : options) {
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d));
-            b.setCallbackData(url.getUrl() + d);
-            keyboard.add(List.of(b));
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            d.getDayOfMonth() + " " + ConvertedUtils.convertMonthToRussian(d),
+                            url.getUrl() + d
+                    )
+            );
         }
 
         markup.setKeyboard(keyboard);
@@ -213,11 +220,13 @@ public class CreateTrainingComponent {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         for (DayOfWeekEnum day : DayOfWeekEnum.values()) {
-            InlineKeyboardButton b = new InlineKeyboardButton();
             String value = day.getValue();
-            b.setText(value);
-            b.setCallbackData(url.getUrl() + value);
-            keyboard.add(List.of(b));
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            value,
+                            url.getUrl() + value
+                    )
+            );
         }
 
         markup.setKeyboard(keyboard);
@@ -237,16 +246,20 @@ public class CreateTrainingComponent {
             String desc = mg.getDescription();
             if (Objects.nonNull(before) && before.contains(desc)) continue;
 
-            InlineKeyboardButton b = new InlineKeyboardButton();
-            b.setText(desc);
-            b.setCallbackData(CREATE_NEW_TRAINING.getUrl() + desc);
-            keyboard.add(List.of(b));
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            desc,
+                            CREATE_NEW_TRAINING.getUrl() + desc
+                    )
+            );
         }
 
-        InlineKeyboardButton confirm = new InlineKeyboardButton();
-        confirm.setText("✅ Подтвердить");
-        confirm.setCallbackData(CREATE_NEW_TRAINING.getUrl() + "done");
-        keyboard.add(List.of(confirm));
+        keyboard.add(
+                CreateButtonHelper.createButtonList(
+                        "✅ Подтвердить",
+                        CREATE_NEW_TRAINING.getUrl() + "done"
+                )
+        );
 
         markup.setKeyboard(keyboard);
         response.setReplyMarkup(markup);
@@ -261,12 +274,8 @@ public class CreateTrainingComponent {
                 Objects.nonNull(request.getDayOfWeek()) &&
                 Objects.nonNull(request.getUserId())) {
 
-            ResponseContainerResult result;
-            try {
-                result = RemoteAppController.getTrainingControllerApi().createTraining(request);
-            } catch (BadRequestException e) {
-                result = e.getResponseBody();
-            }
+            ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
+                    () -> RemoteAppController.getTrainingControllerApi().createTraining(request));
 
             assert result.getCode() != null;
             if (result.getCode().equals(200)) {
@@ -285,10 +294,12 @@ public class CreateTrainingComponent {
 
                 InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-                InlineKeyboardButton b = new InlineKeyboardButton();
-                b.setText("Добавить первое упражнение ");
-                b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + trainingId);
-                keyboard.add(List.of(b));
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                "Добавить первое упражнение ",
+                                CREATE_NEW_EXERCISE.getUrl() + trainingId
+                        )
+                );
                 markup.setKeyboard(keyboard);
                 responseMessage.setReplyMarkup(markup);
 
@@ -312,15 +323,12 @@ public class CreateTrainingComponent {
     private SendMessage callGenerateNewTraining(SendMessage responseMessage,
                                                 RequestContainerGenerateTrainingRequest request, long chatId) {
         if (Objects.nonNull(request.getDateFirstTraining()) &&
-        Objects.nonNull(request.getCount()) &&
-        Objects.nonNull(request.getDayOfWeekFirstTraining()) &&
-        Objects.nonNull(request.getUserId())) {
-            ResponseContainerResult result;
-            try {
-                result = RemoteAppController.getTrainingControllerApi().generateTraining(request);
-            } catch (BadRequestException e) {
-                result = e.getResponseBody();
-            }
+                Objects.nonNull(request.getCount()) &&
+                Objects.nonNull(request.getDayOfWeekFirstTraining()) &&
+                Objects.nonNull(request.getUserId())) {
+            ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
+                    () -> RemoteAppController.getTrainingControllerApi().generateTraining(request));
+
             if (result.getCode().equals(200)) {
                 CashComponent.GENERATE_TRAINING_REQUESTS.remove(chatId);
                 responseMessage.setText("Тренировка успешно добавлена");

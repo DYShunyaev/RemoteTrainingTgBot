@@ -2,10 +2,11 @@ package d.shunyaev.RemoteTrainingTgBot.components.services;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoComponent;
-import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl;
 import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import d.shunyaev.model.RequestContainerCreateUserRequest.GenderEnum;
 import d.shunyaev.model.RequestContainerCreateUserRequest.GoalsEnum;
@@ -143,12 +144,8 @@ public class CreateUserComponent {
                         && Objects.nonNull(createUserRequest.getDateOfBirth())
                         && Objects.nonNull(createUserRequest.getTrainingLevel())
         ) {
-            ResponseContainerResult responseContainerResult;
-            try {
-                responseContainerResult = RemoteAppController.getUserControllerApi().createUser(createUserRequest);
-            } catch (BadRequestException e) {
-                responseContainerResult = e.getResponseBody();
-            }
+            ResponseContainerResult responseContainerResult = CallServerHelper.callRemoteTrainingApp(
+                    () -> RemoteAppController.getUserControllerApi().createUser(createUserRequest));
 
             assert responseContainerResult.getCode() != null;
             if (responseContainerResult.getCode().equals(200)) {
@@ -202,18 +199,17 @@ public class CreateUserComponent {
                 continue;
             }
 
-            InlineKeyboardButton button = new InlineKeyboardButton();
-
-            button.setText(enumValue instanceof IsTrainerEnum
-                    ? ((IsTrainerEnum) enumValue).getValue()
-                    .equals(IsTrainerEnum.NUMBER_0.getValue())
-                    ? "Нет"
-                    : "Да"
-                    : enumValue.toString());
-
-            button.setCallbackData(CREATE_USER.getUrl() + enumValue);
-
-            keyboard.add(List.of(button));
+            keyboard.add(
+                    CreateButtonHelper.createButtonList(
+                            enumValue instanceof IsTrainerEnum
+                                    ? ((IsTrainerEnum) enumValue).getValue()
+                                    .equals(IsTrainerEnum.NUMBER_0.getValue())
+                                    ? "Нет"
+                                    : "Да"
+                                    : enumValue.toString(),
+                            CREATE_USER.getUrl() + enumValue
+                    )
+            );
         }
 
         markupInLine.setKeyboard(keyboard);

@@ -1,5 +1,6 @@
 package d.shunyaev.RemoteTrainingTgBot.components;
 
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -28,7 +29,7 @@ public class BuildGridComponent {
                     .toList();
 
             for (int i = range.get(0); i <= range.get(1); i++) {
-                row.add(createButton(url + callback + i, String.valueOf(i)));
+                row.add(CreateButtonHelper.createButton(url + callback + i, String.valueOf(i)));
                 if (row.size() == 3) {
                     keyboard.add(row);
                     row = new ArrayList<>();
@@ -36,7 +37,7 @@ public class BuildGridComponent {
             }
         } else {
             for (String opt : options) {
-                row.add(createButton(url + callback + opt, opt));
+                row.add(CreateButtonHelper.createButton(url + callback + opt, opt));
                 if (row.size() == 3) {
                     keyboard.add(row);
                     row = new ArrayList<>();
@@ -49,10 +50,4 @@ public class BuildGridComponent {
         return markup;
     }
 
-    private InlineKeyboardButton createButton(String data, String text) {
-        InlineKeyboardButton b = new InlineKeyboardButton();
-        b.setText(text);
-        b.setCallbackData(data);
-        return b;
-    }
 }

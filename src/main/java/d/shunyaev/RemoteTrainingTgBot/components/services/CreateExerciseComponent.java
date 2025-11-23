@@ -3,10 +3,11 @@ package d.shunyaev.RemoteTrainingTgBot.components.services;
 import d.shunyaev.RemoteTrainingTgBot.components.BuildGridComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
-import d.shunyaev.RemoteTrainingTgBot.config.request_interceptors.BadRequestException;
 import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
 import d.shunyaev.RemoteTrainingTgBot.enums.Exercises;
 import d.shunyaev.RemoteTrainingTgBot.enums.MuscleGroup;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerCreateExerciseRequest;
 import d.shunyaev.model.ResponseContainerResult;
 import org.springframework.stereotype.Component;
@@ -83,8 +84,8 @@ public class CreateExerciseComponent {
         responseMessage.setText("Выберите количество подходов:");
         responseMessage.setReplyMarkup(buildGridComponent
                 .buildGrid(data, buildGridComponent.approachCallback, IntStream.rangeClosed(1, 10)
-                .mapToObj(String::valueOf)
-                .toList(), CREATE_NEW_EXERCISE.getUrl()));
+                        .mapToObj(String::valueOf)
+                        .toList(), CREATE_NEW_EXERCISE.getUrl()));
         return responseMessage;
     }
 
@@ -129,10 +130,12 @@ public class CreateExerciseComponent {
                     .toList();
 
             for (Exercises exercise : exercises) {
-                InlineKeyboardButton b = new InlineKeyboardButton();
-                b.setText(exercise.getDescription());
-                b.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + exercise.name());
-                keyboard.add(List.of(b));
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                exercise.getDescription(),
+                                CREATE_NEW_EXERCISE.getUrl() + exercise.name()
+                        )
+                );
             }
 
             markup.setKeyboard(keyboard);
@@ -151,12 +154,8 @@ public class CreateExerciseComponent {
                 Objects.nonNull(request.getExerciseName()) &&
                 Objects.nonNull(request.getQuantity())) {
 
-            ResponseContainerResult result;
-            try {
-                result = RemoteAppController.getExerciseControllerApi().createExercise(request);
-            } catch (BadRequestException e) {
-                result = e.getResponseBody();
-            }
+            ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
+                    () -> RemoteAppController.getExerciseControllerApi().createExercise(request));
 
             assert result.getCode() != null;
             int code = result.getCode();
@@ -168,15 +167,19 @@ public class CreateExerciseComponent {
                 InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
                 List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
-                InlineKeyboardButton next = new InlineKeyboardButton();
-                next.setText("Добавить следующее упражнение");
-                next.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
-                keyboard.add(List.of(next));
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                "Добавить следующее упражнение",
+                                CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId()
+                        )
+                );
 
-                InlineKeyboardButton done = new InlineKeyboardButton();
-                done.setText("Завершить");
-                done.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + "done");
-                keyboard.add(List.of(done));
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                "Завершить",
+                                CREATE_NEW_EXERCISE.getUrl() + "done"
+                        )
+                );
 
                 markup.setKeyboard(keyboard);
                 responseMessage.setReplyMarkup(markup);
@@ -189,36 +192,25 @@ public class CreateExerciseComponent {
                 responseMessage.setText("Ошибка добавления упражнения: \n" +
                         result.getMessage() + "\n Повторите попытку:");
 
-                InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-                List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-                InlineKeyboardButton add = new InlineKeyboardButton();
-                add.setText("Добавить упражнение");
-                add.setCallbackData(CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId());
-
-                keyboard.add(List.of(add));
-                markup.setKeyboard(keyboard);
-                responseMessage.setReplyMarkup(markup);
+                responseMessage.setReplyMarkup(addTrainingButton(request.getTrainingId()));
 
                 CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
             }
         } else {
             responseMessage.setText("Ошибка добавления упражнения:\n Повторите попытку:");
-
-            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-
-            InlineKeyboardButton add = new InlineKeyboardButton();
-            add.setText("Добавить упражнение");
-            keyboard.add(List.of(add));
-
-            markup.setKeyboard(keyboard);
-            responseMessage.setReplyMarkup(markup);
+            responseMessage.setReplyMarkup(addTrainingButton(request.getTrainingId()));
 
             CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
         }
 
         return responseMessage;
+    }
+
+    private InlineKeyboardMarkup addTrainingButton(Long trainingId) {
+        return CreateButtonHelper.addMarkupButton(
+                "Добавить упражнение",
+                CREATE_NEW_EXERCISE.getUrl() + trainingId
+        );
     }
 
     private RequestContainerCreateExerciseRequest getExerciseRequest(long chatId) {
