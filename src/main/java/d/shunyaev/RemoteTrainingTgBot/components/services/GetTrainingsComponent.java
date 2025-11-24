@@ -97,7 +97,7 @@ public class GetTrainingsComponent {
         return (EditMessageText) createTrainingMessage(null, new EditMessageText(), training, chatId);
     }
 
-    private SendMessage createTrainingMessage(
+    public SendMessage createTrainingMessage(
             Trainings training,
             long chatId
     ) {

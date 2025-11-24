@@ -7,6 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class UsersBotRepository extends BaseRepository{
 
@@ -73,6 +75,13 @@ public class UsersBotRepository extends BaseRepository{
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<UsersBot> getAllUsers() {
+        String sql = """
+                select * from users_bot
+                """;
+        return jdbcTemplate.query(sql, mapToRowToUser());
     }
 
     public UsersBot getUserBotByUserName(String userName) {
