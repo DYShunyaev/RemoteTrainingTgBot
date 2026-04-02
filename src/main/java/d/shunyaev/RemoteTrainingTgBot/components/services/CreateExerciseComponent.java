@@ -1,0 +1,219 @@
+package d.shunyaev.RemoteTrainingTgBot.components.services;
+
+import d.shunyaev.RemoteTrainingTgBot.components.BuildGridComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.TrainingsSteps;
+import d.shunyaev.RemoteTrainingTgBot.controller.RemoteAppController;
+import d.shunyaev.RemoteTrainingTgBot.enums.Exercises;
+import d.shunyaev.RemoteTrainingTgBot.enums.MuscleGroup;
+import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
+import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
+import d.shunyaev.model.RequestContainerCreateExerciseRequest;
+import d.shunyaev.model.ResponseContainerResult;
+import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCISE;
+
+@Component
+public class CreateExerciseComponent {
+
+    private final TrainingsSteps getTrainingsComponent;
+    private final BuildGridComponent buildGridComponent;
+
+    public CreateExerciseComponent(TrainingsSteps getTrainingsComponent, BuildGridComponent buildGridComponent) {
+        this.getTrainingsComponent = getTrainingsComponent;
+        this.buildGridComponent = buildGridComponent;
+    }
+
+    public EditMessageText createExercise(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
+        RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
+        responseMessage.setChatId(chatId);
+
+        String data = Optional.ofNullable(callbackQuery)
+                .map(CallbackQuery::getData)
+                .map(d -> d.replaceAll(CREATE_NEW_EXERCISE.getUrl(), ""))
+                .orElse("");
+
+        String regexRange = "\\d*-\\d*";
+        String regexValue = "\\d*";
+
+        if (data.matches(regexValue)) {
+            req.setTrainingId(Long.parseLong(data));
+            return addExerciseName(responseMessage, chatId);
+        } else if (data.matches(buildGridComponent.quantityCallback + regexRange)) {
+            return chooseQuantity(responseMessage, data);
+        } else if (data.matches(buildGridComponent.quantityCallback + regexValue)) {
+            req.setQuantity(Integer.parseInt(data.replaceAll(buildGridComponent.quantityCallback, "")));
+            return chooseWeight(responseMessage, data);
+        } else if (data.matches(buildGridComponent.weightCallback + regexRange)) {
+            return chooseWeight(responseMessage, data);
+        } else if (data.matches(buildGridComponent.weightCallback + regexValue)) {
+            req.setWeight(Integer.parseInt(data.replaceAll(buildGridComponent.weightCallback, "")));
+            return chooseApproach(responseMessage, data);
+        } else if (data.matches(buildGridComponent.approachCallback + regexValue)) {
+            req.setApproach(Integer.parseInt(data.replaceAll(buildGridComponent.approachCallback, "")));
+            return callSetNewExercise(responseMessage, req, chatId);
+        } else if (isValidExerciseName(data)) {
+            req.setExerciseName(Exercises.valueOf(data).getDescription());
+            return chooseQuantity(responseMessage, data);
+        }
+
+        return responseMessage;
+    }
+
+    private boolean isValidExerciseName(String data) {
+        try {
+            return Arrays.stream(Exercises.values())
+                    .collect(Collectors.toSet())
+                    .contains(Exercises.valueOf(data));
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    private EditMessageText chooseApproach(EditMessageText responseMessage, String data) {
+        responseMessage.setText("Выберите количество подходов:");
+        responseMessage.setReplyMarkup(buildGridComponent
+                .buildGrid(data, buildGridComponent.approachCallback, IntStream.rangeClosed(1, 10)
+                        .mapToObj(String::valueOf)
+                        .toList(), CREATE_NEW_EXERCISE.getUrl()));
+        return responseMessage;
+    }
+
+    private EditMessageText chooseWeight(EditMessageText responseMessage, String data) {
+        responseMessage.setText("Выберите вес снаряжения:");
+        responseMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.weightCallback,
+                List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300"), CREATE_NEW_EXERCISE.getUrl()));
+        return responseMessage;
+    }
+
+    private EditMessageText chooseQuantity(EditMessageText responseMessage, String data) {
+        responseMessage.setText("Выберите количество повторений:");
+        responseMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.quantityCallback,
+                List.of("1-10", "11-20", "21-30"), CREATE_NEW_EXERCISE.getUrl()));
+        return responseMessage;
+    }
+
+    private EditMessageText addExerciseName(EditMessageText responseMessage, long chatId) {
+        RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
+
+        var training = getTrainingsComponent.getTrainingsByChatId(chatId)
+                .getTrainings()
+                .stream()
+                .filter(tr -> tr.getTrainingId().equals(req.getTrainingId()))
+                .findFirst()
+                .orElseThrow();
+        String text;
+
+        if (training.getMuscleGroup().contains(MuscleGroup.OTHER.getDescription())) {
+            text = "Введите название упражнения:";
+        } else {
+            text = "Выберите упражнение:";
+            InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+            List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+            var muscleGroup = Arrays.stream(training.getMuscleGroup().split(" \\+ "))
+                    .map(MuscleGroup::getByDescription)
+                    .collect(Collectors.toSet());
+
+            var exercises = Arrays.stream(Exercises.values())
+                    .filter(exerc -> muscleGroup.contains(exerc.getMuscleGroup()))
+                    .toList();
+
+            for (Exercises exercise : exercises) {
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                exercise.getDescription(),
+                                CREATE_NEW_EXERCISE.getUrl() + exercise.name()
+                        )
+                );
+            }
+
+            markup.setKeyboard(keyboard);
+            responseMessage.setReplyMarkup(markup);
+        }
+        responseMessage.setText(text);
+        return responseMessage;
+    }
+
+    private EditMessageText callSetNewExercise(EditMessageText responseMessage,
+                                           RequestContainerCreateExerciseRequest request,
+                                           long chatId) {
+        if (Objects.nonNull(request.getTrainingId()) &&
+                Objects.nonNull(request.getWeight()) &&
+                Objects.nonNull(request.getApproach()) &&
+                Objects.nonNull(request.getExerciseName()) &&
+                Objects.nonNull(request.getQuantity())) {
+
+            ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
+                    () -> RemoteAppController.getExerciseControllerApi().createExercise(request));
+
+            assert result.getCode() != null;
+            int code = result.getCode();
+
+            if (code == 200) {
+                CashComponent.CREATE_EXERCISE_REQUEST.remove(chatId);
+                responseMessage.setText("Упражнение успешно добавлено");
+
+                InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+                List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                "Добавить следующее упражнение",
+                                CREATE_NEW_EXERCISE.getUrl() + request.getTrainingId()
+                        )
+                );
+
+                keyboard.add(
+                        CreateButtonHelper.createButtonList(
+                                "Завершить",
+                                CREATE_NEW_EXERCISE.getUrl() + "done"
+                        )
+                );
+
+                markup.setKeyboard(keyboard);
+                responseMessage.setReplyMarkup(markup);
+
+            } else if (code == -8) {
+                assert result.getMessage() != null;
+                responseMessage.setText(result.getMessage());
+
+            } else {
+                responseMessage.setText("Ошибка добавления упражнения: \n" +
+                        result.getMessage() + "\n Повторите попытку:");
+
+                responseMessage.setReplyMarkup(addTrainingButton(request.getTrainingId()));
+
+                CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
+            }
+        } else {
+            responseMessage.setText("Ошибка добавления упражнения:\n Повторите попытку:");
+            responseMessage.setReplyMarkup(addTrainingButton(request.getTrainingId()));
+
+            CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, new RequestContainerCreateExerciseRequest());
+        }
+
+        return responseMessage;
+    }
+
+    private InlineKeyboardMarkup addTrainingButton(Long trainingId) {
+        return CreateButtonHelper.addMarkupButton(
+                "Добавить упражнение",
+                CREATE_NEW_EXERCISE.getUrl() + trainingId
+        );
+    }
+
+    private RequestContainerCreateExerciseRequest getExerciseRequest(long chatId) {
+        return CashComponent.CREATE_EXERCISE_REQUEST.computeIfAbsent(
+                chatId, k -> new RequestContainerCreateExerciseRequest());
+    }
+}
