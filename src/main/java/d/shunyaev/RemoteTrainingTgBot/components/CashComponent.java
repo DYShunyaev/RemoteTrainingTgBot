@@ -15,4 +15,5 @@ public class CashComponent {
     public static final Map<Long, RequestContainerGenerateTrainingRequest> GENERATE_TRAINING_REQUESTS = new HashMap<>();
     public static final Map<Long, RequestContainerCreateExerciseRequest> CREATE_EXERCISE_REQUEST = new HashMap<>();
     public static final Map<Long, RequestContainerUpdateExerciseRequest> UPDATE_EXERCISE_REQUEST = new HashMap<>();
+    public static final Map<Long, RequestContainerUpdateUserRequest> UPDATE_USER_REQUEST = new HashMap<>();
 }

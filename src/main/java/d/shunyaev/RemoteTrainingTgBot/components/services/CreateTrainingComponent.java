@@ -17,6 +17,7 @@ import d.shunyaev.model.RequestContainerGenerateTrainingRequest.DayOfWeekFirstTr
 import d.shunyaev.model.ResponseContainerResult;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -86,9 +87,8 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
-    public SendMessage createTraining(CallbackQuery callbackQuery, long chatId) {
+    public EditMessageText createTraining(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
         RequestContainerCreateTrainingRequest req = getTrainingRequest(chatId);
-        SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(chatId);
 
         String data = Optional.ofNullable(callbackQuery)
@@ -123,14 +123,16 @@ public class CreateTrainingComponent {
         if ("done".equals(data)) {
             req.setMuscleGroup(String.join(" + ", selectedOptions.get(chatId)));
             return callSetNewTraining(responseMessage, req, chatId);
+        } else if ("createNewExercise/done".equals(data)) {
+            selectedOptions.put(chatId, new HashSet<>());
+            responseMessage.setText("Добавление тренировки завершено");
         }
 
         return responseMessage;
     }
 
-    public SendMessage generateNewTraining(CallbackQuery callbackQuery, long chatId) {
+    public EditMessageText generateNewTraining(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
         RequestContainerGenerateTrainingRequest req = getGenerateTrainingRequest(chatId);
-        SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(chatId);
 
         String data = Optional.ofNullable(callbackQuery)
@@ -157,7 +159,7 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
-    public SendMessage chooseCountOfTraining(SendMessage response, DayOfWeekFirstTrainingEnum day) {
+    public EditMessageText chooseCountOfTraining(EditMessageText response, DayOfWeekFirstTrainingEnum day) {
         response.setText("Выберете количество тернировок в неделе");
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
@@ -192,7 +194,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    public SendMessage chooseDateOfTraining(SendMessage response, String dayOfWeek, ServicesUrl url) {
+    public EditMessageText chooseDateOfTraining(EditMessageText response, String dayOfWeek, ServicesUrl url) {
         DayOfWeek day = ConvertedUtils.convertToDayOfWeek(dayOfWeek);
         List<LocalDate> options = getDaysFromTraining(LocalDate.now(), day);
 
@@ -214,7 +216,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    private SendMessage chooseDayOfWeek(SendMessage response, ServicesUrl url) {
+    private EditMessageText chooseDayOfWeek(EditMessageText response, ServicesUrl url) {
         response.setText("Выберете день недели тренировки:");
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
@@ -234,7 +236,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    public SendMessage chooseMuscleGroup(SendMessage response) {
+    public EditMessageText chooseMuscleGroup(EditMessageText response) {
         response.setText("Выберете цель тренировки:");
         Set<String> before = Optional.ofNullable(selectedOptions.get(Long.parseLong(response.getChatId())))
                 .orElse(null);
@@ -266,7 +268,7 @@ public class CreateTrainingComponent {
         return response;
     }
 
-    private SendMessage callSetNewTraining(SendMessage responseMessage,
+    private EditMessageText callSetNewTraining(EditMessageText responseMessage,
                                            RequestContainerCreateTrainingRequest request,
                                            long chatId) {
         if (Objects.nonNull(request.getDate()) &&
@@ -320,7 +322,7 @@ public class CreateTrainingComponent {
         return responseMessage;
     }
 
-    private SendMessage callGenerateNewTraining(SendMessage responseMessage,
+    private EditMessageText callGenerateNewTraining(EditMessageText responseMessage,
                                                 RequestContainerGenerateTrainingRequest request, long chatId) {
         if (Objects.nonNull(request.getDateFirstTraining()) &&
                 Objects.nonNull(request.getCount()) &&

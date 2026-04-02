@@ -59,9 +59,7 @@ public class GetTrainingsComponent {
         return editMessageText;
     }
 
-    public List<SendMessage> getTrainings(Message requestMessage, long chatId) {
-        List<SendMessage> responseList = new ArrayList<>();
-
+    public List<SendMessage> getTrainings(List<SendMessage> responseList ,Message requestMessage, long chatId) {
         if (!requestMessage.getText().contains("/get_my_trainings")) {
             return responseList;
         }

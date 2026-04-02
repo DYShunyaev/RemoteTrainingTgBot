@@ -233,6 +233,37 @@
         }
       }
     },
+    "/api/get_user_trainer": {
+      "post": {
+        "tags": [
+          "user-info-controller"
+        ],
+        "summary": "Сервис получения информации о тренере пользователя",
+        "operationId": "getUserTrainer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerGetUserTrainerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerGetUsersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/get_training": {
       "post": {
         "tags": [
@@ -276,6 +307,37 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/RequestContainerGenerateTrainingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseContainerResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/delete_user": {
+      "post": {
+        "tags": [
+          "user-controller"
+        ],
+        "summary": "Сервис удаления пользователя",
+        "operationId": "deleteUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestContainerDeleteUserRequest"
               }
             }
           },
@@ -457,26 +519,16 @@
         "type": "object",
         "properties": {
           "email": {
-            "type": "string",
-            "default": "NON",
-            "description": "Допустимые значения: MAN, WOMAN, WOMAN",
-            "enum": [
-              "MAN",
-              "WOMAN",
-              "NON"
-            ],
-            "example": "NON"
+            "type": "string"
           },
           "goals": {
             "type": "string",
-            "default": "Поддержание формы",
             "description": "Допустимые значения: Поддержание формы, Похудение, Набор массы",
             "enum": [
               "Поддержание формы",
               "Похудение",
               "Набор массы"
-            ],
-            "example": "Поддержание формы"
+            ]
           },
           "weight": {
             "type": "integer",
@@ -502,24 +554,20 @@
           "is_trainer": {
             "type": "integer",
             "format": "int32",
-            "default": 0,
             "description": "0 - пользователь,\n1 - тренер",
             "enum": [
               "0",
               "1"
-            ],
-            "example": 1
+            ]
           },
           "training_level": {
             "type": "string",
-            "default": "Новичок",
             "description": "Допустимые значения: Новичок, Средний, Продвинутый",
             "enum": [
               "Новичок",
               "Средний",
               "Продвинутый"
-            ],
-            "example": "Новичок"
+            ]
           },
           "trace_id": {
             "type": "string",
@@ -868,6 +916,35 @@
           "user_info"
         ]
       },
+      "RequestContainerGetUserTrainerRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
       "RequestContainerGetTrainingsRequest": {
         "type": "object",
         "properties": {
@@ -1015,6 +1092,35 @@
             "format": "date",
             "default": "2025-09-22",
             "description": "Дата тренировки"
+          },
+          "trace_id": {
+            "type": "string",
+            "description": "Идентификатор запроса",
+            "example": "5984e103-f81e-4e8e-ad19-3fef7309fb1d",
+            "maxLength": 36,
+            "minLength": 1,
+            "pattern": "^\\p{ASCII}*$"
+          },
+          "user_info": {
+            "type": "string",
+            "description": "Информация о пользователе",
+            "example": "USER",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^\\p{ASCII}*$"
+          }
+        },
+        "required": [
+          "trace_id",
+          "user_info"
+        ]
+      },
+      "RequestContainerDeleteUserRequest": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "format": "int64"
           },
           "trace_id": {
             "type": "string",

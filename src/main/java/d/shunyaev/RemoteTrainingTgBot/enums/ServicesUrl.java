@@ -12,8 +12,10 @@ public enum ServicesUrl {
     CREATE_NEW_TRAINING("createNewTraining/"),
     GENERATE_NEW_TRAINING("generateNewTraining/"),
     UPDATE_TRAINING("updateTraining/"),
+    UPDATE_USER("updateUser/"),
     CREATE_NEW_EXERCISE("createNewExercise/"),
-    SET_MY_TRAINER("setMyTrainer/")
+    SET_MY_TRAINER("setMyTrainer/"),
+    DELETE_USER(UPDATE_USER.getUrl() + "deleteUser/")
     ;
     private final String url;
     ServicesUrl(String url) {

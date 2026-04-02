@@ -23,7 +23,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -142,10 +142,10 @@ public class CreateExerciseTests {
 
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + trainingId);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите упражнение:");
 
@@ -191,10 +191,10 @@ public class CreateExerciseTests {
 
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + trainingId);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Введите название упражнения:");
 
@@ -214,9 +214,9 @@ public class CreateExerciseTests {
 
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + data);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество повторений:");
         expectedMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.quantityCallback,
@@ -231,9 +231,9 @@ public class CreateExerciseTests {
         String callback = buildGridComponent.quantityCallback;
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + callback + data);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество повторений:");
         expectedMessage.setReplyMarkup(buildGridComponent
@@ -248,10 +248,10 @@ public class CreateExerciseTests {
         Integer data = (int) RandomUtils.generateRandomLong(1, 30);
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.quantityCallback + data);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите вес снаряжения:");
         expectedMessage.setReplyMarkup(buildGridComponent
@@ -270,9 +270,9 @@ public class CreateExerciseTests {
         String callback = buildGridComponent.weightCallback;
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + callback + data);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите вес снаряжения:");
         expectedMessage.setReplyMarkup(buildGridComponent
@@ -287,10 +287,10 @@ public class CreateExerciseTests {
         Integer data = (int) RandomUtils.generateRandomLong(1, 300);
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.weightCallback + data);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберите количество подходов:");
         expectedMessage.setReplyMarkup(buildGridComponent
@@ -318,7 +318,7 @@ public class CreateExerciseTests {
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
 
         ExerciseControllerApi mockApi = mock(ExerciseControllerApi.class);
-        SendMessage actualMessage;
+        EditMessageText actualMessage;
 
         try (MockedStatic<RemoteAppController> mockedStatic = mockStatic(RemoteAppController.class)) {
             mockedStatic.when(RemoteAppController::getExerciseControllerApi).thenReturn(mockApi);
@@ -327,12 +327,12 @@ public class CreateExerciseTests {
                             .code(200)
                             .message("")
             );
-            actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+            actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         }
 
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Упражнение успешно добавлено");
 
@@ -371,7 +371,7 @@ public class CreateExerciseTests {
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
 
         ExerciseControllerApi mockApi = mock(ExerciseControllerApi.class);
-        SendMessage actualMessage;
+        EditMessageText actualMessage;
 
         try (MockedStatic<RemoteAppController> mockedStatic = mockStatic(RemoteAppController.class)) {
             mockedStatic.when(RemoteAppController::getExerciseControllerApi).thenReturn(mockApi);
@@ -381,12 +381,12 @@ public class CreateExerciseTests {
                             .message("Ошибка добавления упражнения")
             );
 
-            actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+            actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         }
 
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Ошибка добавления упражнения: \n" +
                 "Ошибка добавления упражнения" + "\n Повторите попытку:");
@@ -415,10 +415,10 @@ public class CreateExerciseTests {
         callbackQuery.setData(CREATE_NEW_EXERCISE.getUrl() + buildGridComponent.approachCallback + data);
         CashComponent.CREATE_EXERCISE_REQUEST.put(chatId, request);
 
-        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId);
+        var actualMessage = createExerciseComponent.createExercise(callbackQuery, chatId, new EditMessageText());
         var actualReq = CashComponent.CREATE_EXERCISE_REQUEST.get(chatId);
 
-        var expectedMessage = new SendMessage();
+        var expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Ошибка добавления упражнения:\n Повторите попытку:");
 

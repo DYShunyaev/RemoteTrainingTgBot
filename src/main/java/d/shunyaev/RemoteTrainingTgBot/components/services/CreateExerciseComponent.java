@@ -11,7 +11,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerCreateExerciseRequest;
 import d.shunyaev.model.ResponseContainerResult;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -33,9 +33,8 @@ public class CreateExerciseComponent {
         this.buildGridComponent = buildGridComponent;
     }
 
-    public SendMessage createExercise(CallbackQuery callbackQuery, long chatId) {
+    public EditMessageText createExercise(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
         RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
-        SendMessage responseMessage = new SendMessage();
         responseMessage.setChatId(chatId);
 
         String data = Optional.ofNullable(callbackQuery)
@@ -80,7 +79,7 @@ public class CreateExerciseComponent {
         }
     }
 
-    private SendMessage chooseApproach(SendMessage responseMessage, String data) {
+    private EditMessageText chooseApproach(EditMessageText responseMessage, String data) {
         responseMessage.setText("Выберите количество подходов:");
         responseMessage.setReplyMarkup(buildGridComponent
                 .buildGrid(data, buildGridComponent.approachCallback, IntStream.rangeClosed(1, 10)
@@ -89,21 +88,21 @@ public class CreateExerciseComponent {
         return responseMessage;
     }
 
-    private SendMessage chooseWeight(SendMessage responseMessage, String data) {
+    private EditMessageText chooseWeight(EditMessageText responseMessage, String data) {
         responseMessage.setText("Выберите вес снаряжения:");
         responseMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.weightCallback,
                 List.of("0-50", "51-100", "101-150", "151-200", "201-250", "251-300"), CREATE_NEW_EXERCISE.getUrl()));
         return responseMessage;
     }
 
-    private SendMessage chooseQuantity(SendMessage responseMessage, String data) {
+    private EditMessageText chooseQuantity(EditMessageText responseMessage, String data) {
         responseMessage.setText("Выберите количество повторений:");
         responseMessage.setReplyMarkup(buildGridComponent.buildGrid(data, buildGridComponent.quantityCallback,
                 List.of("1-10", "11-20", "21-30"), CREATE_NEW_EXERCISE.getUrl()));
         return responseMessage;
     }
 
-    private SendMessage addExerciseName(SendMessage responseMessage, long chatId) {
+    private EditMessageText addExerciseName(EditMessageText responseMessage, long chatId) {
         RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
 
         var training = getTrainingsComponent.getTrainingsByChatId(chatId)
@@ -145,7 +144,7 @@ public class CreateExerciseComponent {
         return responseMessage;
     }
 
-    private SendMessage callSetNewExercise(SendMessage responseMessage,
+    private EditMessageText callSetNewExercise(EditMessageText responseMessage,
                                            RequestContainerCreateExerciseRequest request,
                                            long chatId) {
         if (Objects.nonNull(request.getTrainingId()) &&

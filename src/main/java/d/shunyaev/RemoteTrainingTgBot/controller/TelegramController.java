@@ -1,6 +1,7 @@
 package d.shunyaev.RemoteTrainingTgBot.controller;
 
 import d.shunyaev.RemoteTrainingTgBot.components.CashComponent;
+import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoComponent;
 import d.shunyaev.RemoteTrainingTgBot.components.services.*;
 import d.shunyaev.RemoteTrainingTgBot.models.MessageCash;
 import jakarta.ws.rs.NotFoundException;
@@ -26,6 +27,9 @@ public class TelegramController {
     private final GetTrainingsComponent getTrainingsComponent;
     private final UpdateTrainingsComponent updateTrainingsComponent;
     private final TrainerComponent trainerComponent;
+    private final GetUserInfoComponent getUserInfoComponent;
+    private final UpdateUserComponent updateUserComponent;
+    private final DeleteUserComponent deleteUserComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private final Map<Long, EditMessageText> beforeEditMessages = new HashMap<>();
 
@@ -36,7 +40,10 @@ public class TelegramController {
             CreateExerciseComponent createExerciseComponent,
             GetTrainingsComponent getTrainingsComponent,
             UpdateTrainingsComponent updateTrainingsComponent,
-            TrainerComponent trainerComponent
+            TrainerComponent trainerComponent,
+            GetUserInfoComponent getUserInfoComponent,
+            UpdateUserComponent updateUserComponent,
+            DeleteUserComponent deleteUserComponent
     ) {
         this.createUserComponent = telegramService;
         this.registrationComponent = registrationComponent;
@@ -45,6 +52,9 @@ public class TelegramController {
         this.getTrainingsComponent = getTrainingsComponent;
         this.updateTrainingsComponent = updateTrainingsComponent;
         this.trainerComponent = trainerComponent;
+        this.getUserInfoComponent = getUserInfoComponent;
+        this.updateUserComponent = updateUserComponent;
+        this.deleteUserComponent = deleteUserComponent;
     }
 
     public EditMessageText backMessage(Update update) {
@@ -69,8 +79,12 @@ public class TelegramController {
         editMessageText.setMessageId(callbackQuery.getMessage().getMessageId());
         editMessageText.setChatId(chatId);
 
+        editMessageText = createTrainingController(callbackQuery, chatId, editMessageText);
+        editMessageText = createExerciseController(callbackQuery, chatId, editMessageText);
         editMessageText = getTrainingsComponent.setTrainingIsDone(callbackQuery, chatId, editMessageText);
         editMessageText = updateTrainingsComponent.updateTraining(callbackQuery, chatId, editMessageText);
+        editMessageText = updateUserComponent.updateUser(callbackQuery, chatId, editMessageText);
+        editMessageText = deleteUserComponent.deleteUser(editMessageText, chatId, callbackQuery);
 
         beforeEditMessages.put(chatId, editMessageText);
         return editMessageText;
@@ -82,9 +96,11 @@ public class TelegramController {
 
         long chatId = requestMessage != null ? requestMessage.getChatId() : callbackQuery.getFrom().getId();
 
-        List<SendMessage> responseMessages;
+        List<SendMessage> responseMessages = new ArrayList<>();
 
-        responseMessages = getTrainingsComponent.getTrainings(requestMessage, chatId);
+        responseMessages = getTrainingsComponent.getTrainings(responseMessages, requestMessage, chatId);
+        responseMessages = getUserInfoComponent.getUserTrainer(responseMessages, requestMessage, chatId);
+        responseMessages = getUserInfoComponent.getMyData(responseMessages, requestMessage, chatId);
         return responseMessages;
     }
 
@@ -97,9 +113,8 @@ public class TelegramController {
 
         responseMessage = registrationController(requestMessage, responseMessage);
         responseMessage = createUserController(callbackQuery, requestMessage, chatId, responseMessage);
-        responseMessage = createTrainingController(callbackQuery, requestMessage, chatId, responseMessage);
-        responseMessage = createExerciseController(callbackQuery, chatId, responseMessage);
-        responseMessage = setMyTrainerController(responseMessage, update.getMessage(), chatId);
+        responseMessage = createTrainingController(requestMessage, chatId, responseMessage);
+        responseMessage = setMyTrainerController(responseMessage, callbackQuery, update.getMessage(), chatId);
 
         beforeMessages.put(chatId, responseMessage);
         return responseMessage;
@@ -135,6 +150,7 @@ public class TelegramController {
         String userInput = message != null ? message.getText() : null;
         String beforeText = beforeMessage.getText();
 
+        if (Objects.isNull(beforeText)) return responseMessage;
         if (beforeText.contains("email")) {
             callbackQuery.setData(CREATE_USER.getUrl() + EMAIL.getUrl() + userInput);
         } else if (beforeText.contains("вес") || beforeText.contains("Вес")) {
@@ -151,12 +167,9 @@ public class TelegramController {
     }
 
     private SendMessage createTrainingController(
-            CallbackQuery callbackQuery,
             Message message, long chatId,
             SendMessage responseMessage
     ) {
-        String data = (callbackQuery != null) ? callbackQuery.getData() : "";
-        String textCommand = data.replaceAll("/.*", "");
         String textMessage = Objects.nonNull(message)
                 ? message.getText()
                 : "";
@@ -165,55 +178,56 @@ public class TelegramController {
             return createTrainingComponent.createOrGenerate(chatId);
         }
 
+        return responseMessage;
+    }
+
+    private EditMessageText createTrainingController(
+            CallbackQuery callbackQuery,
+            long chatId,
+            EditMessageText responseMessage
+    ) {
+        String data = (callbackQuery != null) ? callbackQuery.getData() : "";
+        String textCommand = data.replaceAll("/.*", "");
+
         if ("createNewTraining".equals(textCommand)) {
-            return createTrainingComponent.createTraining(callbackQuery, chatId);
+            return createTrainingComponent.createTraining(callbackQuery, chatId, responseMessage);
         } else if ("generateNewTraining".equals(textCommand)) {
-            return createTrainingComponent.generateNewTraining(callbackQuery, chatId);
+            return createTrainingComponent.generateNewTraining(callbackQuery, chatId, responseMessage);
+        } else if (data.equals("createNewExercise/done")) {
+            return createTrainingComponent.createTraining(callbackQuery, chatId, responseMessage);
         }
         return responseMessage;
     }
 
-    private SendMessage createExerciseController(CallbackQuery callbackQuery, long chatId, SendMessage responseMessage) {
+    private EditMessageText createExerciseController(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
         String data = (callbackQuery != null) ? callbackQuery.getData() : "";
         String textCommand = data.replaceAll("/.*", "");
 
         if (data.contains("done")) return responseMessage;
         if ("createNewExercise".equals(textCommand)) {
-            return createExerciseComponent.createExercise(callbackQuery, chatId);
+            return createExerciseComponent.createExercise(callbackQuery, chatId, responseMessage);
         }
         return responseMessage;
     }
 
-    private SendMessage setMyTrainerController(SendMessage responseMessage, Message message, long chatId) {
-        if (Objects.nonNull(message) && message.getText().equals("/set_my_trainer")) {
+    private SendMessage setMyTrainerController(SendMessage responseMessage, CallbackQuery callbackQuery,
+                                               Message message, long chatId) {
+        if (Objects.nonNull(message) && message.getText().equals("/set_my_trainer")
+                || Objects.nonNull(callbackQuery) && callbackQuery.getData().equals("/set_my_trainer")) {
             return trainerComponent.setTrainer(responseMessage, chatId);
-        } else if (Objects.nonNull(beforeMessages.get(chatId)) &&
-                beforeMessages.get(chatId).getText().contains("Введите user_name")) {
+        } else if (Objects.nonNull(beforeMessages.get(chatId))
+                && Objects.nonNull(beforeMessages.get(chatId).getText())
+                && beforeMessages.get(chatId).getText().contains("Введите user_name")) {
             return trainerComponent.setTrainer(responseMessage, message, chatId);
+        } else {
+            return responseMessage;
         }
-        return responseMessage;
     }
 
     private CallbackQuery createNewCallbackQuery(Message message) {
         CallbackQuery callbackQuery = new CallbackQuery();
         callbackQuery.setMessage(message);
         return callbackQuery;
-    }
-
-    private void setMessageCash(long chatId, EditMessageText editMessageText) {
-        MessageCash messageCash = new MessageCash();
-        messageCash.setChatId(chatId);
-        messageCash.setEditMessageText(editMessageText);
-        messageCash.setLocalDateTime(LocalDateTime.now());
-        CashComponent.MESSAGE_CASH.add(messageCash);
-    }
-
-    private void setMessageCash(long chatId, SendMessage editMessageText) {
-        MessageCash messageCash = new MessageCash();
-        messageCash.setChatId(chatId);
-        messageCash.setEditMessageText(editMessageText);
-        messageCash.setLocalDateTime(LocalDateTime.now());
-        CashComponent.MESSAGE_CASH.add(messageCash);
     }
 
     private void setMessageCash(long chatId, Message editMessageText) {

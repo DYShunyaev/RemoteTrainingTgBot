@@ -96,6 +96,19 @@ public class UsersBotRepository extends BaseRepository{
         }
     }
 
+    public void deleteUserBot(long chatId) {
+        String sqlUserRegistration = """
+                delete from user_registration
+                where chat_id = ?
+                """;
+        String sqlUsersBot = """
+                delete from users_bot
+                where chat_id = ?
+                """;
+        jdbcTemplate.update(sqlUserRegistration, chatId);
+        jdbcTemplate.update(sqlUsersBot, chatId);
+    }
+
     private RowMapper<UsersBot> mapToRowToUser() {
         return ((rs, rowNum) -> new UsersBot()
                 .setId(rs.getLong("id"))

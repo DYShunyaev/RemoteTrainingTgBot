@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -79,7 +80,7 @@ public class CreateTrainingTests {
 
     @Test
     public void chooseDayOfWeekTest() {
-        SendMessage expectedMessage = new SendMessage();
+        EditMessageText expectedMessage = new EditMessageText();
 
         expectedMessage.setChatId(chatId);
         expectedMessage.setText("Выберете день недели тренировки:");
@@ -99,7 +100,7 @@ public class CreateTrainingTests {
 
         callbackQuery.setData(null);
 
-        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId, new EditMessageText());
         var cashReq = CashComponent.CREATE_TRAINING_REQUESTS.get(chatId);
 
         Assertions.assertAll(
@@ -116,15 +117,15 @@ public class CreateTrainingTests {
         CashComponent.CREATE_TRAINING_REQUESTS.put(chatId, new RequestContainerCreateTrainingRequest());
         callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + dayOfWeek);
 
-        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId, new EditMessageText());
         var cashReq = CashComponent.CREATE_TRAINING_REQUESTS.get(chatId);
 
-        SendMessage expectedMessage = new SendMessage();
+        EditMessageText expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
 
         expectedMessage = createTrainingComponent.chooseDateOfTraining(expectedMessage, dayOfWeek, CREATE_NEW_TRAINING);
 
-        SendMessage finalExpectedMessage = expectedMessage;
+        EditMessageText finalExpectedMessage = expectedMessage;
         var expectedDayOfWeek = Arrays.stream(DayOfWeekEnum.values())
                 .filter(i -> i.getValue().equals(dayOfWeek))
                 .findFirst()
@@ -148,14 +149,14 @@ public class CreateTrainingTests {
         CashComponent.CREATE_TRAINING_REQUESTS.put(chatId, new RequestContainerCreateTrainingRequest());
         callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + trainingDate);
 
-        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId, new EditMessageText());
         var cashReq = CashComponent.CREATE_TRAINING_REQUESTS.get(chatId);
 
-        SendMessage expectedMessage = new SendMessage();
+        EditMessageText expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage = createTrainingComponent.chooseMuscleGroup(expectedMessage);
 
-        SendMessage finalExpectedMessage = expectedMessage;
+        EditMessageText finalExpectedMessage = expectedMessage;
         Assertions.assertAll(
                 () -> Assertions.assertEquals(finalExpectedMessage, actualMessage),
                 () -> Assertions.assertEquals(trainingDate, cashReq.getDate())
@@ -184,13 +185,13 @@ public class CreateTrainingTests {
         CashComponent.CREATE_TRAINING_REQUESTS.put(chatId, new RequestContainerCreateTrainingRequest());
         callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + muscleGroup);
 
-        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId);
+        var actualMessage = createTrainingComponent.createTraining(callbackQuery, chatId, new EditMessageText());
 
-        SendMessage expectedMessage = new SendMessage();
+        EditMessageText expectedMessage = new EditMessageText();
         expectedMessage.setChatId(chatId);
         expectedMessage = createTrainingComponent.chooseMuscleGroup(expectedMessage);
 
-        SendMessage finalExpectedMessage = expectedMessage;
+        EditMessageText finalExpectedMessage = expectedMessage;
         Assertions.assertEquals(finalExpectedMessage, actualMessage);
     }
 }

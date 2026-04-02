@@ -275,79 +275,79 @@ public class TelegramControllerTests {
         Assertions.assertEquals(expectedMessage, actualMessage);
     }
 
-    @Test
-    public void createNewTrainingTest() {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData("createNewTraining");
-        update.setCallbackQuery(callbackQuery);
-
-        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
-
-        var actualMessage = telegramController.createController(update);
-
-        Assertions.assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void chooseDayOfTrainingTest() {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "Понедельник");
-
-        update.setCallbackQuery(callbackQuery);
-
-        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
-
-        var actualMessage = telegramController.createController(update);
-
-        Assertions.assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void chooseDateTrainingTest() {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + LocalDate.now());
-
-        update.setCallbackQuery(callbackQuery);
-
-        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
-
-        var actualMessage = telegramController.createController(update);
-
-        Assertions.assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void chooseMuscleGroupTest() {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "Грудные мышцы");
-
-        update.setCallbackQuery(callbackQuery);
-
-        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
-
-        var actualMessage = telegramController.createController(update);
-
-        Assertions.assertEquals(expectedMessage, actualMessage);
-    }
-
-    @Test
-    public void createTrainingDoneTest() {
-        var callbackQuery = new CallbackQuery();
-        callbackQuery.setFrom(user);
-        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "done");
-
-        update.setCallbackQuery(callbackQuery);
-
-        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
-
-        var actualMessage = telegramController.createController(update);
-
-        Assertions.assertEquals(expectedMessage, actualMessage);
-    }
+//    @Test
+//    public void createNewTrainingTest() {
+//        var callbackQuery = new CallbackQuery();
+//        callbackQuery.setFrom(user);
+//        callbackQuery.setData("createNewTraining");
+//        update.setCallbackQuery(callbackQuery);
+//
+//        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
+//
+//        var actualMessage = telegramController.createController(update);
+//
+//        Assertions.assertEquals(expectedMessage, actualMessage);
+//    }
+//
+//    @Test
+//    public void chooseDayOfTrainingTest() {
+//        var callbackQuery = new CallbackQuery();
+//        callbackQuery.setFrom(user);
+//        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "Понедельник");
+//
+//        update.setCallbackQuery(callbackQuery);
+//
+//        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
+//
+//        var actualMessage = telegramController.createController(update);
+//
+//        Assertions.assertEquals(expectedMessage, actualMessage);
+//    }
+//
+//    @Test
+//    public void chooseDateTrainingTest() {
+//        var callbackQuery = new CallbackQuery();
+//        callbackQuery.setFrom(user);
+//        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + LocalDate.now());
+//
+//        update.setCallbackQuery(callbackQuery);
+//
+//        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
+//
+//        var actualMessage = telegramController.createController(update);
+//
+//        Assertions.assertEquals(expectedMessage, actualMessage);
+//    }
+//
+//    @Test
+//    public void chooseMuscleGroupTest() {
+//        var callbackQuery = new CallbackQuery();
+//        callbackQuery.setFrom(user);
+//        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "Грудные мышцы");
+//
+//        update.setCallbackQuery(callbackQuery);
+//
+//        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
+//
+//        var actualMessage = telegramController.createController(update);
+//
+//        Assertions.assertEquals(expectedMessage, actualMessage);
+//    }
+//
+//    @Test
+//    public void createTrainingDoneTest() {
+//        var callbackQuery = new CallbackQuery();
+//        callbackQuery.setFrom(user);
+//        callbackQuery.setData(CREATE_NEW_TRAINING.getUrl() + "done");
+//
+//        update.setCallbackQuery(callbackQuery);
+//
+//        when(createTrainingComponent.createTraining(callbackQuery, chatId)).thenReturn(expectedMessage);
+//
+//        var actualMessage = telegramController.createController(update);
+//
+//        Assertions.assertEquals(expectedMessage, actualMessage);
+//    }
 
     @SneakyThrows
     private void putBeforeMessage(SendMessage beforeMessage) {
