@@ -1,7 +1,6 @@
 package d.shunyaev.RemoteTrainingTgBot.service;
 
 import d.shunyaev.RemoteTrainingTgBot.config.BotConfig;
-import d.shunyaev.RemoteTrainingTgBot.controller.TelegramController;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -20,11 +19,11 @@ import java.util.List;
 public class TelegramBot extends TelegramLongPollingBot {
 
     private final BotConfig config;
-    private final TelegramController telegramController;
+    private final TelegramUpdateProcessor telegramUpdateProcessor;
 
-    public TelegramBot(BotConfig config, TelegramController telegramController) {
+    public TelegramBot(BotConfig config, TelegramUpdateProcessor telegramUpdateProcessor) {
         this.config = config;
-        this.telegramController = telegramController;
+        this.telegramUpdateProcessor = telegramUpdateProcessor;
 
         var commands = List.of(
                 new BotCommand("/start", "Начать работу"),
@@ -44,31 +43,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().contains("get")) {
-            sendMessages(telegramController.getController(update));
-            return;
-        }
-
-        if (update.hasCallbackQuery()) {
-            String data = update.getCallbackQuery().getData();
-            if (
-                    data != null && !data.contains("create")
-                    || data != null && data.contains("createNewTraining")
-                    || data != null && data.contains("createNewExercise")
-                    || data != null && data.contains("generateNewTraining")
-            ) {
-                if (data.contains("editMessage")
-                        || data.contains("update") || data.contains("createNewTraining")
-                        || data.contains("generateNewTraining") || data.contains("createNewExercise")) {
-                    sendMessage(telegramController.editMessageController(update));
-                } else if ("back".equals(data)) {
-                    sendMessage(telegramController.backMessage(update));
-                }
-                return;
-            }
-        }
-
-        sendMessage(telegramController.createController(update));
+        telegramUpdateProcessor.processUpdate(update, this::sendMessage, this::sendMessages);
     }
 
     @Override

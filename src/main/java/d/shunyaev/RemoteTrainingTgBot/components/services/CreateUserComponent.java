@@ -13,6 +13,7 @@ import d.shunyaev.model.RequestContainerCreateUserRequest.GoalsEnum;
 import d.shunyaev.model.RequestContainerCreateUserRequest.TrainingLevelEnum;
 import d.shunyaev.model.RequestContainerCreateUserRequest.IsTrainerEnum;
 import d.shunyaev.model.ResponseContainerResult;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -33,26 +34,18 @@ import java.util.stream.Collectors;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class CreateUserComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final RegistrationComponent registrationComponent;
     private final GetUserInfoComponent getUserInfoComponent;
+    private final RemoteAppController remoteAppController;
     private final Class<GenderEnum> GENDER = GenderEnum.class;
     private final Class<GoalsEnum> GOALS = GoalsEnum.class;
     private final Class<TrainingLevelEnum> TRAINING_LEVEL = TrainingLevelEnum.class;
     private final Class<IsTrainerEnum> IS_TRAINER = IsTrainerEnum.class;
-
-    public CreateUserComponent(
-            UsersBotRepository usersBotRepository,
-            RegistrationComponent registrationComponent,
-            GetUserInfoComponent getUserInfoComponent
-    ) {
-        this.usersBotRepository = usersBotRepository;
-        this.registrationComponent = registrationComponent;
-        this.getUserInfoComponent = getUserInfoComponent;
-    }
 
     public SendMessage createUser(CallbackQuery callbackQuery, long chatId) {
         RequestContainerCreateUserRequest createUserRequest =
@@ -145,7 +138,7 @@ public class CreateUserComponent {
                         && Objects.nonNull(createUserRequest.getTrainingLevel())
         ) {
             ResponseContainerResult responseContainerResult = CallServerHelper.callRemoteTrainingApp(
-                    () -> RemoteAppController.getUserControllerApi().createUser(createUserRequest));
+                    () -> remoteAppController.getUserControllerApi().createUser(createUserRequest));
 
             assert responseContainerResult.getCode() != null;
             if (responseContainerResult.getCode().equals(200)) {

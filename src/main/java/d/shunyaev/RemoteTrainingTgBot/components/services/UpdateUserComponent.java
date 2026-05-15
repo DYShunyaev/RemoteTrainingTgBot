@@ -11,6 +11,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerUpdateUserRequest;
 import d.shunyaev.model.UserData;
 import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -26,23 +27,14 @@ import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.DELETE_USER;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.UPDATE_USER;
 
 @Component
+@RequiredArgsConstructor
 public class UpdateUserComponent {
 
     private final GetUserInfoComponent getUserInfoComponent;
     private final BuildGridComponent buildGridComponent;
     private final UsersBotRepository usersBotRepository;
-
+    private final RemoteAppController remoteAppController;
     private UserData userData;
-
-    public UpdateUserComponent(
-            GetUserInfoComponent getUserInfoComponent,
-            BuildGridComponent buildGridComponent,
-            UsersBotRepository usersBotRepository
-    ) {
-        this.getUserInfoComponent = getUserInfoComponent;
-        this.buildGridComponent = buildGridComponent;
-        this.usersBotRepository = usersBotRepository;
-    }
 
     public EditMessageText updateUser(CallbackQuery callbackQuery, long chatId, EditMessageText editMessageText) {
         String data = callbackQuery.getData();
@@ -77,7 +69,7 @@ public class UpdateUserComponent {
             UsersBot usersBot = usersBotRepository.getUserBotByChatId(chatId);
             req.setUserId(usersBot.getUserId());
             CallServerHelper.callRemoteTrainingApp(
-                    () -> RemoteAppController.getUserControllerApi().updateUser(req)
+                    () -> remoteAppController.getUserControllerApi().updateUser(req)
             );
         }
 

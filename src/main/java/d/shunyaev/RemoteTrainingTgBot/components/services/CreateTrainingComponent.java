@@ -15,6 +15,7 @@ import d.shunyaev.model.RequestContainerCreateTrainingRequest.DayOfWeekEnum;
 import d.shunyaev.model.RequestContainerGenerateTrainingRequest;
 import d.shunyaev.model.RequestContainerGenerateTrainingRequest.DayOfWeekFirstTrainingEnum;
 import d.shunyaev.model.ResponseContainerResult;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -32,25 +33,16 @@ import java.util.stream.IntStream;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
+@RequiredArgsConstructor
 public class CreateTrainingComponent {
 
     private final RegistrationComponent registrationComponent;
     private final ValidateComponent validateComponent;
     private final GetUserInfoComponent getUserInfoComponent;
     private final TrainingsSteps getTrainingsComponent;
+    private final RemoteAppController remoteAppController;
     private final Map<Long, Set<String>> selectedOptions = new HashMap<>();
 
-    public CreateTrainingComponent(
-            RegistrationComponent registrationComponent,
-            ValidateComponent validateComponent,
-            GetUserInfoComponent getUserInfoComponent,
-            TrainingsSteps getTrainingsComponent
-    ) {
-        this.registrationComponent = registrationComponent;
-        this.validateComponent = validateComponent;
-        this.getUserInfoComponent = getUserInfoComponent;
-        this.getTrainingsComponent = getTrainingsComponent;
-    }
 
     public SendMessage createOrGenerate(long chatId) {
         SendMessage responseMessage = new SendMessage();
@@ -277,7 +269,7 @@ public class CreateTrainingComponent {
                 Objects.nonNull(request.getUserId())) {
 
             ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                    () -> RemoteAppController.getTrainingControllerApi().createTraining(request));
+                    () -> remoteAppController.getTrainingControllerApi().createTraining(request));
 
             assert result.getCode() != null;
             if (result.getCode().equals(200)) {
@@ -329,7 +321,7 @@ public class CreateTrainingComponent {
                 Objects.nonNull(request.getDayOfWeekFirstTraining()) &&
                 Objects.nonNull(request.getUserId())) {
             ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                    () -> RemoteAppController.getTrainingControllerApi().generateTraining(request));
+                    () -> remoteAppController.getTrainingControllerApi().generateTraining(request));
 
             if (result.getCode().equals(200)) {
                 CashComponent.GENERATE_TRAINING_REQUESTS.remove(chatId);

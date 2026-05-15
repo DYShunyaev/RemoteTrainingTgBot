@@ -8,6 +8,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.FileHelper;
 import d.shunyaev.model.RequestContainerCreateUserRequest;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -17,15 +18,11 @@ import org.telegram.telegrambots.meta.api.objects.User;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_USER;
 
 @Component
+@RequiredArgsConstructor
 public class RegistrationComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final ValidateComponent validateComponent;
-
-    public RegistrationComponent(UsersBotRepository usersBotRepository, ValidateComponent validateComponent) {
-        this.usersBotRepository = usersBotRepository;
-        this.validateComponent = validateComponent;
-    }
 
     @Transactional
     boolean isRegistration(Message message, long chatId) {

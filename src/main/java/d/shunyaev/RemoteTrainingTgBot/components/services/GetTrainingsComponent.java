@@ -6,6 +6,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.Exercises;
 import d.shunyaev.model.ResponseContainerResult;
 import d.shunyaev.model.Trainings;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -21,15 +22,10 @@ import java.util.Objects;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
+@RequiredArgsConstructor
 public class GetTrainingsComponent {
 
     private final TrainingsSteps getTrainingsSteps;
-
-    public GetTrainingsComponent(
-            TrainingsSteps getTrainingsSteps
-    ) {
-        this.getTrainingsSteps = getTrainingsSteps;
-    }
 
     public EditMessageText setTrainingIsDone(CallbackQuery callbackQuery, long chatId, EditMessageText editMessageText) {
         if (!callbackQuery.getData().contains("getTraining/isDone/")) {

@@ -5,6 +5,7 @@ import d.shunyaev.RemoteTrainingTgBot.components.getters_components.GetUserInfoC
 import d.shunyaev.RemoteTrainingTgBot.components.services.*;
 import d.shunyaev.RemoteTrainingTgBot.models.MessageCash;
 import jakarta.ws.rs.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -18,6 +19,7 @@ import java.util.*;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.*;
 
 @Component
+@RequiredArgsConstructor
 public class TelegramController {
 
     private final RegistrationComponent registrationComponent;
@@ -32,30 +34,6 @@ public class TelegramController {
     private final DeleteUserComponent deleteUserComponent;
     private final Map<Long, SendMessage> beforeMessages = new HashMap<>();
     private final Map<Long, EditMessageText> beforeEditMessages = new HashMap<>();
-
-    public TelegramController(
-            CreateUserComponent telegramService,
-            RegistrationComponent registrationComponent,
-            CreateTrainingComponent createTrainingComponent,
-            CreateExerciseComponent createExerciseComponent,
-            GetTrainingsComponent getTrainingsComponent,
-            UpdateTrainingsComponent updateTrainingsComponent,
-            TrainerComponent trainerComponent,
-            GetUserInfoComponent getUserInfoComponent,
-            UpdateUserComponent updateUserComponent,
-            DeleteUserComponent deleteUserComponent
-    ) {
-        this.createUserComponent = telegramService;
-        this.registrationComponent = registrationComponent;
-        this.createTrainingComponent = createTrainingComponent;
-        this.createExerciseComponent = createExerciseComponent;
-        this.getTrainingsComponent = getTrainingsComponent;
-        this.updateTrainingsComponent = updateTrainingsComponent;
-        this.trainerComponent = trainerComponent;
-        this.getUserInfoComponent = getUserInfoComponent;
-        this.updateUserComponent = updateUserComponent;
-        this.deleteUserComponent = deleteUserComponent;
-    }
 
     public EditMessageText backMessage(Update update) {
         CallbackQuery callbackQuery = update.getCallbackQuery();
