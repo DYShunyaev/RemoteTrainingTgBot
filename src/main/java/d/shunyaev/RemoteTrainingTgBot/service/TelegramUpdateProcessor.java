@@ -1,6 +1,7 @@
 package d.shunyaev.RemoteTrainingTgBot.service;
 
 import d.shunyaev.RemoteTrainingTgBot.controller.TelegramController;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
@@ -11,12 +12,9 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Service
+@RequiredArgsConstructor
 public class TelegramUpdateProcessor {
     private final TelegramController telegramController;
-
-    public TelegramUpdateProcessor(TelegramController telegramController) {
-        this.telegramController = telegramController;
-    }
 
     @Async
     public void processUpdate(Update update, Consumer<BotApiMethod<?>> messageSender, Consumer<List<SendMessage>> messagesSender) {
