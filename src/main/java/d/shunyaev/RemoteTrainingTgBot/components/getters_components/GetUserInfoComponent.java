@@ -9,6 +9,7 @@ import d.shunyaev.RemoteTrainingTgBot.repositories.UsersBotRepository;
 import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.*;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -21,21 +22,19 @@ import java.util.List;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class GetUserInfoComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final RegistrationComponent registrationComponent;
+    private final RemoteAppController remoteAppController;
 
     private final RequestContainerGetUserByUserNameRequest request = new RequestContainerGetUserByUserNameRequest();
 
-    public GetUserInfoComponent(UsersBotRepository usersBotRepository, RegistrationComponent registrationComponent) {
-        this.usersBotRepository = usersBotRepository;
-        this.registrationComponent = registrationComponent;
-    }
 
     public UserData getUserInfo(@NonNull String userName) {
         request.setUserName(userName);
-        ResponseContainerGetUsersResponse response = RemoteAppController
+        ResponseContainerGetUsersResponse response = remoteAppController
                 .getUserInfoControllerApi().getUsersByUserName(request);
         return response.getUsers()
                 .stream()
@@ -45,7 +44,7 @@ public class GetUserInfoComponent {
 
     public Long getUserId(@NonNull String userName) {
         request.setUserName(userName);
-        ResponseContainerGetUsersResponse response = RemoteAppController
+        ResponseContainerGetUsersResponse response = remoteAppController
                 .getUserInfoControllerApi().getUsersByUserName(request);
         return response.getUsers()
                 .stream()
@@ -65,7 +64,7 @@ public class GetUserInfoComponent {
         UserData userData = null;
         ResponseContainerResult errorResult = null;
         try {
-            userData = RemoteAppController.getUserInfoControllerApi().getUserTrainer(
+            userData = remoteAppController.getUserInfoControllerApi().getUserTrainer(
                             new RequestContainerGetUserTrainerRequest()
                                     .userId(usersBot.getUserId())
                     )

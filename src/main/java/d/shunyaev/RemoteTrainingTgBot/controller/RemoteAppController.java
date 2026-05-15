@@ -5,45 +5,42 @@ import d.shunyaev.api.ExerciseControllerApi;
 import d.shunyaev.api.TrainingControllerApi;
 import d.shunyaev.api.UserControllerApi;
 import d.shunyaev.api.UserInfoControllerApi;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Component
+@RequiredArgsConstructor
 public class RemoteAppController {
 
-    @Getter
-    private static final RemoteAppApiClient CLIENT = new RemoteAppApiClient();
-    private static UserControllerApi userControllerApi;
-    private static UserInfoControllerApi userInfoControllerApi;
-    private static TrainingControllerApi trainingControllerApi;
-    private static ExerciseControllerApi exerciseControllerApi;
+    private final RemoteAppApiClient client;
+    private UserControllerApi userControllerApi;
+    private UserInfoControllerApi userInfoControllerApi;
+    private TrainingControllerApi trainingControllerApi;
+    private ExerciseControllerApi exerciseControllerApi;
 
-    public static UserControllerApi getUserControllerApi() {
-        if (userControllerApi == null) {
-            userControllerApi = CLIENT.buildClient(UserControllerApi.class);
-        }
+    @PostConstruct
+    public void init() {
+        this.userControllerApi = client.buildClient(UserControllerApi.class);
+        this.userInfoControllerApi = client.buildClient(UserInfoControllerApi.class);
+        this.trainingControllerApi = client.buildClient(TrainingControllerApi.class);
+        this.exerciseControllerApi = client.buildClient(ExerciseControllerApi.class);
+    }
+
+    public UserControllerApi getUserControllerApi() {
         return userControllerApi;
     }
 
-    public static UserInfoControllerApi getUserInfoControllerApi() {
-        if (userInfoControllerApi == null) {
-            userInfoControllerApi = CLIENT.buildClient(UserInfoControllerApi.class);
-        }
+    public UserInfoControllerApi getUserInfoControllerApi() {
         return userInfoControllerApi;
     }
 
-    public static TrainingControllerApi getTrainingControllerApi() {
-        if (trainingControllerApi == null) {
-            trainingControllerApi = CLIENT.buildClient(TrainingControllerApi.class);
-        }
+    public TrainingControllerApi getTrainingControllerApi() {
         return trainingControllerApi;
     }
 
-    public static ExerciseControllerApi getExerciseControllerApi() {
-        if (exerciseControllerApi == null) {
-            exerciseControllerApi = CLIENT.buildClient(ExerciseControllerApi.class);
-        }
+    public ExerciseControllerApi getExerciseControllerApi() {
         return exerciseControllerApi;
     }
+
 }

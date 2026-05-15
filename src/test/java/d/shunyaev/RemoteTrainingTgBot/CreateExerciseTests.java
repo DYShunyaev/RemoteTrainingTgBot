@@ -49,6 +49,8 @@ public class CreateExerciseTests {
     private BuildGridComponent buildGridComponent;
     @Mock
     private TrainingsSteps getTrainingsComponent;
+    @Mock
+    private RemoteAppController remoteAppController;
     private CallbackQuery callbackQuery;
     private long chatId;
 
@@ -321,7 +323,7 @@ public class CreateExerciseTests {
         EditMessageText actualMessage;
 
         try (MockedStatic<RemoteAppController> mockedStatic = mockStatic(RemoteAppController.class)) {
-            mockedStatic.when(RemoteAppController::getExerciseControllerApi).thenReturn(mockApi);
+            mockedStatic.when(remoteAppController::getExerciseControllerApi).thenReturn(mockApi);
             when(mockApi.createExercise(req)).thenReturn(
                     new ResponseContainerResult()
                             .code(200)
@@ -374,7 +376,7 @@ public class CreateExerciseTests {
         EditMessageText actualMessage;
 
         try (MockedStatic<RemoteAppController> mockedStatic = mockStatic(RemoteAppController.class)) {
-            mockedStatic.when(RemoteAppController::getExerciseControllerApi).thenReturn(mockApi);
+            mockedStatic.when(remoteAppController::getExerciseControllerApi).thenReturn(mockApi);
             when(mockApi.createExercise(req)).thenReturn(
                     new ResponseContainerResult()
                             .code(-300)

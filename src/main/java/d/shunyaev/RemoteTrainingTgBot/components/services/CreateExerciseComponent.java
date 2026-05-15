@@ -10,6 +10,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerCreateExerciseRequest;
 import d.shunyaev.model.ResponseContainerResult;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -23,15 +24,12 @@ import java.util.stream.IntStream;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.CREATE_NEW_EXERCISE;
 
 @Component
+@RequiredArgsConstructor
 public class CreateExerciseComponent {
 
     private final TrainingsSteps getTrainingsComponent;
     private final BuildGridComponent buildGridComponent;
-
-    public CreateExerciseComponent(TrainingsSteps getTrainingsComponent, BuildGridComponent buildGridComponent) {
-        this.getTrainingsComponent = getTrainingsComponent;
-        this.buildGridComponent = buildGridComponent;
-    }
+    private final RemoteAppController remoteAppController;
 
     public EditMessageText createExercise(CallbackQuery callbackQuery, long chatId, EditMessageText responseMessage) {
         RequestContainerCreateExerciseRequest req = getExerciseRequest(chatId);
@@ -154,7 +152,7 @@ public class CreateExerciseComponent {
                 Objects.nonNull(request.getQuantity())) {
 
             ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                    () -> RemoteAppController.getExerciseControllerApi().createExercise(request));
+                    () -> remoteAppController.getExerciseControllerApi().createExercise(request));
 
             assert result.getCode() != null;
             int code = result.getCode();

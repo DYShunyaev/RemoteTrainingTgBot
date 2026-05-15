@@ -8,6 +8,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
 import d.shunyaev.model.RequestContainerSetTrainerRequest;
 import d.shunyaev.model.ResponseContainerResult;
 import d.shunyaev.model.UserData;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -15,18 +16,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import java.util.Objects;
 
 @Component
+@RequiredArgsConstructor
 public class TrainerComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final GetUserInfoComponent getUserInfoComponent;
-
-    public TrainerComponent(
-            UsersBotRepository usersBotRepository,
-            GetUserInfoComponent getUserInfoComponent
-    ) {
-        this.usersBotRepository = usersBotRepository;
-        this.getUserInfoComponent = getUserInfoComponent;
-    }
+    private final RemoteAppController remoteAppController;
 
     public SendMessage setTrainer(SendMessage responseMessage, long chatId) {
         String text = "Введите user_name (имя пользователя Telegram) своего тренера:";
@@ -55,7 +50,7 @@ public class TrainerComponent {
         UserData trainer = getUserInfoComponent.getUserInfo(trainerUserName);
 
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getUserControllerApi().setTrainer(
+                () -> remoteAppController.getUserControllerApi().setTrainer(
                         new RequestContainerSetTrainerRequest()
                                 .trainerId(trainer.getUserId())
                                 .userId(user.getUserId())

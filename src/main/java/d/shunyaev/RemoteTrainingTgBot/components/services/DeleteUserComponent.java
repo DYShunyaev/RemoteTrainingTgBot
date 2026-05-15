@@ -8,6 +8,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CallServerHelper;
 import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.RequestContainerDeleteUserRequest;
 import d.shunyaev.model.ResponseContainerResult;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -20,18 +21,12 @@ import java.util.List;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.DELETE_USER;
 
 @Component
+@RequiredArgsConstructor
 public class DeleteUserComponent {
 
     private final UsersBotRepository usersBotRepository;
     private final GetUserInfoComponent getUserInfoComponent;
-
-    public DeleteUserComponent(
-            UsersBotRepository usersBotRepository,
-            GetUserInfoComponent getUserInfoComponent
-    ) {
-        this.usersBotRepository = usersBotRepository;
-        this.getUserInfoComponent = getUserInfoComponent;
-    }
+    private final RemoteAppController remoteAppController;
 
     public EditMessageText deleteUser(EditMessageText editMessageText, long chatId, CallbackQuery callbackQuery) {
         String data = callbackQuery.getData();
@@ -53,7 +48,7 @@ public class DeleteUserComponent {
     private void deleteUser(EditMessageText editMessageText, long chatId) {
         UsersBot usersBot = usersBotRepository.getUserBotByChatId(chatId);
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getUserControllerApi().deleteUser(
+                () -> remoteAppController.getUserControllerApi().deleteUser(
                         new RequestContainerDeleteUserRequest()
                                 .userId(usersBot.getUserId())
                 )

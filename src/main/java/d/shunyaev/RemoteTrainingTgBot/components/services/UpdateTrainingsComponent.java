@@ -11,6 +11,7 @@ import d.shunyaev.RemoteTrainingTgBot.utils.CreateButtonHelper;
 import d.shunyaev.model.*;
 import d.shunyaev.model.RequestContainerUpdateTrainingRequest.DayOfWeekEnum;
 import jakarta.validation.constraints.NotNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -27,19 +28,16 @@ import java.util.stream.IntStream;
 import static d.shunyaev.RemoteTrainingTgBot.enums.ServicesUrl.UPDATE_TRAINING;
 
 @Component
+@RequiredArgsConstructor
 public class UpdateTrainingsComponent {
 
     private final TrainingsSteps trainingsSteps;
     private final GetTrainingsComponent getTrainingsComponent;
     private final BuildGridComponent buildGridComponent;
+    private final RemoteAppController remoteAppController;
+
     private final Map<Long, Long> trainingsIds = new HashMap<>();
     private final Map<Long, Long> exerciseIds = new HashMap<>();
-
-    public UpdateTrainingsComponent(TrainingsSteps trainingsSteps, GetTrainingsComponent getTrainingsComponent, BuildGridComponent buildGridComponent) {
-        this.trainingsSteps = trainingsSteps;
-        this.getTrainingsComponent = getTrainingsComponent;
-        this.buildGridComponent = buildGridComponent;
-    }
 
     public EditMessageText updateTraining(CallbackQuery callbackQuery, long chatId, EditMessageText editMessageText) {
         String data = callbackQuery.getData();
@@ -289,7 +287,7 @@ public class UpdateTrainingsComponent {
         RequestContainerUpdateExerciseRequest request = CashComponent.UPDATE_EXERCISE_REQUEST.get(chatId)
                 .exerciseId(exerciseId);
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getExerciseControllerApi().updateExercise(request)
+                () -> remoteAppController.getExerciseControllerApi().updateExercise(request)
         );
 
         if (Objects.requireNonNull(result.getCode()).equals(200)) {
@@ -323,7 +321,7 @@ public class UpdateTrainingsComponent {
                 .trainingId(trainingId);
 
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getTrainingControllerApi().updateTraining(request)
+                () -> remoteAppController.getTrainingControllerApi().updateTraining(request)
         );
 
         if (Objects.requireNonNull(result.getCode()).equals(200)) {
@@ -364,7 +362,7 @@ public class UpdateTrainingsComponent {
 
     private void deleteExercise(long chatId, long exerciseId, EditMessageText editMessageText) {
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getExerciseControllerApi().deleteExercise(
+                () -> remoteAppController.getExerciseControllerApi().deleteExercise(
                         new RequestContainerDeleteExerciseRequest()
                                 .exerciseId(exerciseId)
                 )
@@ -412,7 +410,7 @@ public class UpdateTrainingsComponent {
 
     private void deleteTraining(long trainingId, EditMessageText editMessageText) {
         ResponseContainerResult result = CallServerHelper.callRemoteTrainingApp(
-                () -> RemoteAppController.getTrainingControllerApi().deleteTraining(
+                () -> remoteAppController.getTrainingControllerApi().deleteTraining(
                         new RequestContainerDeleteTrainingRequest()
                                 .trainingId(trainingId)
                 )
