@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import jakarta.annotation.PostConstruct; // или javax.annotation.PostConstruct в зависимости от версии Spring
 import java.util.List;
 
 @Component
@@ -24,7 +25,14 @@ public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot(BotConfig config, TelegramUpdateProcessor telegramUpdateProcessor) {
         this.config = config;
         this.telegramUpdateProcessor = telegramUpdateProcessor;
+    }
 
+    @PostConstruct
+    public void init() {
+        addCommands();
+    }
+
+    private void addCommands() {
         var commands = List.of(
                 new BotCommand("/start", "Начать работу"),
                 new BotCommand("/create_new_training", "Создать новую тренировку"),
@@ -36,6 +44,7 @@ public class TelegramBot extends TelegramLongPollingBot {
 
         try {
             this.execute(new SetMyCommands(commands, new BotCommandScopeDefault(), null));
+            log.info("Commands successfully registered!");
         } catch (TelegramApiException e) {
             log.error("Error setting commands: {}", e.getMessage());
         }
